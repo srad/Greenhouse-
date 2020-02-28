@@ -1,0 +1,76 @@
+﻿<Window x:Class="Greenhouse__.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Greenhouse__"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        Title="Greenhouse++" 
+        WindowStartupLocation="CenterScreen"
+        Topmost="False"
+        WindowState="Normal"
+        Background="DarkGray"
+        FontFamily="Segoe UI Light" FontSize="16"
+        Icon="./Resources/leaf.ico">
+  <Window.Resources>
+    <Style TargetType="Button">
+      <Setter Property="Padding" Value="2"/>
+      <Setter Property="Margin" Value="10"/>
+    </Style>
+    <Style TargetType="Image">
+    </Style>
+  </Window.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="50"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="190"/>
+    </Grid.ColumnDefinitions>
+
+    <Grid Grid.Row="0" Grid.Column="2" Grid.RowSpan="3">
+      <ListView x:Name="TvBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180" Margin="0,5,0,5">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Vertical"></StackPanel>
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ListView.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Orientation="Vertical" Background="Gray" Width="165" HorizontalAlignment="Center" Margin="0,0,0,5">
+              <Image MouseDown="Image_MouseDown" Tag="{Binding File}" Margin="0,5,0,0" Source="{Binding ImageData}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Width="154" Stretch="UniformToFill" />
+              <Button x:Name="btnDeleteImage" Tag="{Binding File}" Content="Delete" Click="btnDeleteImage_Click" Margin="5"/>
+              <!--<TextBlock Text="{Binding Title}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />-->
+            </StackPanel>
+          </DataTemplate>
+        </ListView.ItemTemplate>
+      </ListView>
+    </Grid>
+
+    <Grid Margin="5,5,5,0" Grid.Row="0" Grid.Column="0" Background="FloralWhite">
+      <Image x:Name="imgHist" Source="./Resources/leaf.png"/>
+    </Grid>
+    <Grid Margin="5,5,5,0" Grid.Row="1" Grid.Column="0" Background="FloralWhite">
+      <Image Source="./Resources/leaf.png"/>
+    </Grid>
+    <Grid Margin="0,5,0,0" Grid.Row="0" Grid.Column="1" Background="FloralWhite">
+      <Image x:Name="imgInput" Source="./Resources/leaf.png"/>
+    </Grid>
+    <Grid Margin="0,5,0,0" Grid.Row="1" Grid.Column="1" Background="FloralWhite">
+      <Image x:Name="imgClustered" Source="./Resources/leaf.png" MouseUp="OpenImageClustered" />
+    </Grid>
+    <Grid Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2">
+      <Grid Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center">
+        <StackPanel Orientation="Horizontal">
+          <Button x:Name="btnOpenFile" Click="btnOpenFile_Click" Width="200">Open Image</Button>
+          <Button x:Name="btnOpenFolder" Width="200" Click="btnOpenFolder_Click">Open Folder</Button>
+        </StackPanel>
+      </Grid>
+    </Grid>
+  </Grid>
+</Window>
