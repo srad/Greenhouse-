@@ -24,7 +24,9 @@
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="*"/>
+      <RowDefinition Height="30"/>
       <RowDefinition Height="*"/>
+      <RowDefinition Height="30"/>
       <RowDefinition Height="60"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
@@ -33,13 +35,26 @@
       <ColumnDefinition Width="194"/>
     </Grid.ColumnDefinitions>
 
-    <Grid Grid.Row="0" Grid.Column="2" Grid.RowSpan="3">
+    <Grid Grid.Row="1" Grid.Column="0" Margin="5,0,5,0">
+      <Label Content="Histograms" Background="AntiqueWhite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+    </Grid>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,0,0">
+      <Label Content="Original Image" Background="AntiqueWhite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+    </Grid>
+    <Grid Grid.Row="3" Grid.Column="1" Margin="0,0,0,0">
+      <Label Content="Green Theshold" Background="GreenYellow" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+    </Grid>
+    <Grid Grid.Row="3" Grid.Column="0" Margin="5,0,5,0">
+      <Label Content="Red Theshold" Background="PaleVioletRed" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+    </Grid>
+
+    <Grid Grid.Row="0" Grid.Column="2" Grid.RowSpan="5">
       <ScrollViewer 
         Grid.Row="1" 
         CanContentScroll="True" 
         VerticalScrollBarVisibility="Auto" 
         HorizontalScrollBarVisibility="Disabled">
-        <ListView x:Name="TvBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180" Margin="0,5,0,5">
+        <ListView x:Name="TvBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="DarkGray" Width="180" Margin="0">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
               <StackPanel Orientation="Vertical"></StackPanel>
@@ -47,10 +62,9 @@
           </ItemsControl.ItemsPanel>
           <ListView.ItemTemplate>
             <DataTemplate>
-              <StackPanel Orientation="Vertical" Background="Gray" Width="165" HorizontalAlignment="Center" Margin="0,0,0,5">
-                <Image MouseDown="Image_MouseDown" Tag="{Binding File}" Margin="0,5,0,0" Source="{Binding ImageData}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Width="154" Stretch="UniformToFill" />
-                <Button x:Name="btnDeleteImage" Tag="{Binding File}" Content="Delete" Click="btnDeleteImage_Click" Margin="5"/>
-                <!--<TextBlock Text="{Binding Title}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />-->
+              <StackPanel Orientation="Vertical" Background="Gray" Width="160" HorizontalAlignment="Center" Margin="0,5,0,0">
+                <Image MouseDown="Image_MouseDown" Tag="{Binding File}" Margin="0" Source="{Binding ImageData}" HorizontalAlignment="Stretch" VerticalAlignment="Top" />
+                <Button x:Name="btnDeleteImage" Tag="{Binding File}" Content="Delete" Click="btnDeleteImage_Click" Margin="0" HorizontalAlignment="Stretch"/>
               </StackPanel>
             </DataTemplate>
           </ListView.ItemTemplate>
@@ -96,27 +110,76 @@
         </Grid>
       </Grid>
     </Grid>
-    <Grid Margin="5,5,5,0" Grid.Row="1" Grid.Column="0" Background="FloralWhite">
-      <Image Source="./Resources/leaf.png"/>
+    <Grid Margin="5,5,5,0" Grid.Row="2" Grid.Column="0" Background="FloralWhite">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="40"/>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="40"/>
+      </Grid.RowDefinitions>
+      <Image x:Name="filterRed" Source="./Resources/leaf.png" Grid.Column="0" Grid.RowSpan="3"/>
+      <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" x:Name="RedThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
+      <Label Grid.Row="1" Grid.Column="1" Content="{Binding Value, ElementName=RedThreshold}" FontSize="13"/>
+      <Button Grid.Column="2" Grid.Row="2" Click="FilterRed_MouseDown">
+        <Image Source="./Resources/Button/photo.png"/>
+      </Button>
     </Grid>
     <Grid Margin="0,5,0,0" Grid.Row="0" Grid.Column="1" Background="FloralWhite">
-      <Image x:Name="imgInput" Source="./Resources/leaf.png"/>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="50"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+          <Image Margin="5" x:Name="imgInput" Source="./Resources/leaf.png"/>
+        </Grid>
+        <Grid Grid.Column="1">
+          <StackPanel Orientation="Vertical" VerticalAlignment="Top">
+            <Button>
+              <Image Source="./Resources/Button/undo.png" Width="16" Height="16" />
+            </Button>
+            <Button>
+            <Image Source="./Resources/Button/redo.png" Width="16" Height="16" />
+            </Button>
+            <Button>
+              <Image Source="./Resources/Button/save.png" Width="16" Height="16" />
+            </Button>
+            <Button>
+              <Image Source="./Resources/Button/shape-green.png" Width="16" Height="16" />
+            </Button>
+            <Button>
+              <Image Source="./Resources/Button/shape-red.png" Width="16" Height="16" />
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Grid>
     </Grid>
-    <Grid Margin="0,5,0,0" Grid.Row="1" Grid.Column="1" Background="FloralWhite">
-      <Image x:Name="imgClustered" Source="./Resources/leaf.png" MouseUp="OpenImageClustered" />
+    <Grid Margin="0,5,0,0" Grid.Row="2" Grid.Column="1" Background="FloralWhite">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="40"/>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="40"/>
+      </Grid.RowDefinitions>
+      <Image Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" x:Name="filterGreen" Source="./Resources/leaf.png" />
+      <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" x:Name="GreenThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
+      <Label Grid.Row="1" Grid.Column="1" Content="{Binding Value, ElementName=GreenThreshold}" FontSize="13"/>
+      <Button Grid.Column="2" Grid.Row="2" Click="FilterGreen_MouseDown">
+        <Image Source="./Resources/Button/photo.png"/>
+      </Button>
     </Grid>
-    <Grid Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2">
+    <Grid Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2">
       <Grid Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center">
         <StackPanel Orientation="Horizontal">
+          <Label x:Name="working" Content="Working...." VerticalAlignment="Center" FontWeight="Bold" FontSize="16" Visibility="Hidden"/>
           <Button x:Name="btnOpenFile" Click="btnOpenFile_Click" Width="200">Open Image</Button>
-          <Button x:Name="btnOpenFolder" Width="200" Click="btnOpenFolder_Click">Open Folder</Button>
-          <StackPanel Orientation="Vertical"  VerticalAlignment="Center" Height="40">
-            <Slider x:Name="GreenThreshold" Minimum="1" Maximum="100" Width="130" TickFrequency="1" IsSnapToTickEnabled="True" Value="90"/>
-            <StackPanel Orientation="Horizontal">
-              <Label Content="Green Threshold" FontSize="13"/>
-              <Label Content="{Binding Value, ElementName=GreenThreshold}" FontSize="13"/>
-            </StackPanel>
-          </StackPanel>
+          <Button x:Name="btnOpenFolder" Width="200" Click="BtnOpenFolder_Click">Open Folder</Button>
         </StackPanel>
       </Grid>
     </Grid>

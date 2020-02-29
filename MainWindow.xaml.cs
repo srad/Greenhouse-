@@ -17,9 +17,8 @@ namespace Greenhouse__
   /// </summary>
   public partial class MainWindow : Window
   {
-    private bool filtered = false;
     private ImageProcessor ImageProcessor;
-    private ImageFile imagefile;
+    private ImageManager CurrentFile;
     private readonly ObservableCollection<ImageListView> ImageFileList = new ObservableCollection<ImageListView>();
     private bool drawPoints = false;
 
@@ -27,13 +26,7 @@ namespace Greenhouse__
     {
       InitializeComponent();
 
-      Directory.CreateDirectory(ImageFile.ImagePath);
-      Directory.CreateDirectory(ImageFile.ThumbsPath);
-      Directory.CreateDirectory(ImageFile.FilteredPath);
-      Directory.CreateDirectory(ImageFile.HistPath);
-
-
-      var images = Directory.GetFiles(ImageFile.ThumbsPath, "*.jpg");
+      var images = Directory.GetFiles(ImageManager.ThumbsPath, "*.jpg");
       foreach (var image in images)
       {
         AddImageToListView(image);
@@ -79,14 +72,14 @@ namespace Greenhouse__
         // Copy file to project
         var filePath = openFileDialog.FileName;
         var randomFilename = Guid.NewGuid() + Path.GetExtension(filePath);
-        var targetFile = ImageFile.ImagePath + randomFilename;
+        var targetFile = ImageManager.ImagePath + randomFilename;
         File.Copy(filePath, targetFile);
-        imagefile = new ImageFile(randomFilename);
+        CurrentFile = new ImageManager(randomFilename);
 
         // Create Thumb
-        var thumb = ImageHelper.Resize(imagefile.Original, 300, 200);
-        thumb.Save(imagefile.Thumb);
-        AddImageToListView(imagefile.Thumb);
+        var thumb = ImageHelper.Resize(CurrentFile.Original.Path, 300, 200);
+        thumb.Save(CurrentFile.Thumb.Path);
+        AddImageToListView(CurrentFile.Thumb.Path);
 
         ProcessFile();
       }
@@ -94,24 +87,25 @@ namespace Greenhouse__
 
     private void ProcessFile()
     {
-      imgInput.Source = ImageHelper.LoadBitmap(imagefile.Original);
-      ImageProcessor = new ImageProcessor(imagefile, (progress) =>
-      {
-      });
+      working.Visibility = Visibility.Visible;
+      imgInput.Source = CurrentFile.Original.BitmapImage.Value;
+      ImageProcessor = new ImageProcessor(CurrentFile, (progress) => {});
 
-      var histogram = ImageProcessor.Start(GreenThreshold.Value);
+      // Color distribution of the original image
+      var histogram = ImageProcessor.Start(new FilterThesholds(green: GreenThreshold.Value, red: RedThreshold.Value));
+
       var hR = new System.Drawing.Bitmap(256, 200);
       var hG = new System.Drawing.Bitmap(256, 200);
       var hB = new System.Drawing.Bitmap(256, 200);
       var max = histogram.Max();
-      var maxAll = Math.Max(Math.Max(max.b, max.g), max.r);
+      var maxAll = Math.Max(Math.Max(max.B, max.G), max.R);
       var colorBandHeight = 4;
 
-      for (int i = 0; i < RGBHistogram.MAX; i++)
+      for (int i = 0; i < Histogram.MAX; i++)
       {
-        int r = (int)(((double)histogram.r[i] / (double)(maxAll + 1)) * hR.Height);
-        int g = (int)(((double)histogram.g[i] / (double)(maxAll + 1)) * hG.Height);
-        int b = (int)(((double)histogram.b[i] / (double)(maxAll + 1)) * hB.Height);
+        int r = (int)(((double)histogram.R[i] / (double)(maxAll + 1)) * hR.Height);
+        int g = (int)(((double)histogram.G[i] / (double)(maxAll + 1)) * hG.Height);
+        int b = (int)(((double)histogram.B[i] / (double)(maxAll + 1)) * hB.Height);
 
         var green = System.Drawing.Color.FromArgb(0, i, 0);
         var red = System.Drawing.Color.FromArgb(i, 0, 0);
@@ -149,31 +143,23 @@ namespace Greenhouse__
         }
       }
 
-      hR.Save(imagefile.HistR);
-      hG.Save(imagefile.HistG);
-      hB.Save(imagefile.HistB);
-      imgHistR.Source = ImageHelper.LoadBitmap(imagefile.HistR);
-      imgHistG.Source = ImageHelper.LoadBitmap(imagefile.HistG);
-      imgHistB.Source = ImageHelper.LoadBitmap(imagefile.HistB);
+      hR.Save(CurrentFile.HistR.Path);
+      hG.Save(CurrentFile.HistG.Path);
+      hB.Save(CurrentFile.HistB.Path);
+      imgHistR.Source = CurrentFile.HistR.BitmapImage.Value;
+      imgHistG.Source = CurrentFile.HistG.BitmapImage.Value;
+      imgHistB.Source = CurrentFile.HistB.BitmapImage.Value;
 
-      filtered = true;
-      imgClustered.Source = ImageHelper.LoadBitmap(imagefile.Filtered);
+      working.Visibility = Visibility.Hidden;
+      filterRed.Source = CurrentFile.FilteredRed.BitmapImage.Value;
+      filterGreen.Source = CurrentFile.FilteredGreen.BitmapImage.Value;
     }
     
-    private void OpenImageClustered(object sender, MouseButtonEventArgs e)
-    {
-      if (!filtered)
-      {
-        return;
-      }
-      OpenFile(imagefile.Filtered);
-    }
-
     private void Image_MouseDown(object sender, MouseButtonEventArgs e)
     {
       var image = sender as System.Windows.Controls.Image;
       var file = (string)image.Tag;
-      imagefile = new ImageFile(file);
+      CurrentFile = new ImageManager(file);
       ProcessFile();
     }
 
@@ -184,9 +170,9 @@ namespace Greenhouse__
       photoViewer.Start();
     }
 
-    private void btnOpenFolder_Click(object sender, RoutedEventArgs e)
+    private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)
     {
-      Process.Start(ImageFile.BasePath);
+      Process.Start(ImageManager.BasePath);
     }
 
     private void btnDeleteImage_Click(object sender, RoutedEventArgs e)
@@ -196,15 +182,20 @@ namespace Greenhouse__
       {
         var image = sender as System.Windows.Controls.Button;
         var file = (string)image.Tag;
-        var paths = new ImageFile(file);
+        var paths = new ImageManager(file);
         RemoveItem(file);
-        File.Delete(paths.HistR);
-        File.Delete(paths.HistG);
-        File.Delete(paths.HistB);
-        File.Delete(paths.Original);
-        File.Delete(paths.Thumb);
-        File.Delete(paths.Filtered);
+        paths.Delete();
       }
+    }
+
+    private void FilterGreen_MouseDown(object sender, RoutedEventArgs e)
+    {
+      OpenFile(CurrentFile.FilteredGreen.Path);
+    }
+
+    private void FilterRed_MouseDown(object sender, RoutedEventArgs e)
+    {
+      OpenFile(CurrentFile.FilteredRed.Path);
     }
   }
 }
