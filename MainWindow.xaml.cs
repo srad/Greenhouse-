@@ -21,6 +21,7 @@ namespace Greenhouse__
     private ImageProcessor ImageProcessor;
     private ImageFile imagefile;
     private readonly ObservableCollection<ImageListView> ImageFileList = new ObservableCollection<ImageListView>();
+    private bool drawPoints = false;
 
     public MainWindow()
     {
@@ -59,6 +60,8 @@ namespace Greenhouse__
       {
         if (ImageFileList[i].File == filename)
         {
+          ImageFileList[i].ImageData = null;
+          GC.Collect();
           ImageFileList.Remove(ImageFileList[i]);
         }
       }
@@ -96,50 +99,62 @@ namespace Greenhouse__
       {
       });
 
-      var histogram = ImageProcessor.Start();
-      var histImage = new System.Drawing.Bitmap(256, 200);
+      var histogram = ImageProcessor.Start(GreenThreshold.Value);
+      var hR = new System.Drawing.Bitmap(256, 200);
+      var hG = new System.Drawing.Bitmap(256, 200);
+      var hB = new System.Drawing.Bitmap(256, 200);
       var max = histogram.Max();
       var maxAll = Math.Max(Math.Max(max.b, max.g), max.r);
       var colorBandHeight = 4;
 
       for (int i = 0; i < RGBHistogram.MAX; i++)
       {
-        int r = (int)(((double)histogram.r[i] / (double)(maxAll + 1)) * histImage.Height);
-        int g = (int)(((double)histogram.g[i] / (double)(maxAll + 1)) * histImage.Height);
-        int b = (int)(((double)histogram.b[i] / (double)(maxAll + 1)) * histImage.Height);
+        int r = (int)(((double)histogram.r[i] / (double)(maxAll + 1)) * hR.Height);
+        int g = (int)(((double)histogram.g[i] / (double)(maxAll + 1)) * hG.Height);
+        int b = (int)(((double)histogram.b[i] / (double)(maxAll + 1)) * hB.Height);
 
         var green = System.Drawing.Color.FromArgb(0, i, 0);
         var red = System.Drawing.Color.FromArgb(i, 0, 0);
         var blue = System.Drawing.Color.FromArgb(0, 0, i);
 
-        histImage.SetPixel(i, histImage.Height - r - 1, System.Drawing.Color.FromArgb(125, 255, 0, 0));
-        histImage.SetPixel(i, histImage.Height - g - 1, System.Drawing.Color.FromArgb(125, 0, 255, 0));
-        histImage.SetPixel(i, histImage.Height - b - 1, System.Drawing.Color.FromArgb(125, 0, 0, 255));
-        /*
-        for (int yR = histImage.Height - r - 1; yR < histImage.Height - 1; yR++)
+        if (drawPoints)
         {
-          histImage.SetPixel(i, yR, System.Drawing.Color.FromArgb(125, 255, 0, 0));
+          hR.SetPixel(i, hR.Height - r - 1, System.Drawing.Color.FromArgb(125, 255, 0, 0));
+          hG.SetPixel(i, hG.Height - g - 1, System.Drawing.Color.FromArgb(125, 0, 255, 0));
+          hB.SetPixel(i, hB.Height - b - 1, System.Drawing.Color.FromArgb(125, 0, 0, 255));
         }
-        for (int yG = histImage.Height - g - 1; yG < histImage.Height - 1; yG++)
+        else
         {
-          histImage.SetPixel(i, yG, System.Drawing.Color.FromArgb(125, 0, 255, 0));
+          for (int yR = hR.Height - r - 1; yR < hR.Height - 1; yR++)
+          {
+            hR.SetPixel(i, yR, System.Drawing.Color.FromArgb(125, 255, 0, 0));
+          }
+          for (int yG = hG.Height - g - 1; yG < hG.Height - 1; yG++)
+          {
+            hG.SetPixel(i, yG, System.Drawing.Color.FromArgb(125, 0, 255, 0));
+          }
+          for (int yB = hB.Height - b - 1; yB < hB.Height - 1; yB++)
+          {
+            hB.SetPixel(i, yB, System.Drawing.Color.FromArgb(125, 0, 0, 255));
+          }
         }
-        for (int yB = histImage.Height - b - 1; yB < histImage.Height - 1; yB++)
-        {
-          histImage.SetPixel(i, yB, System.Drawing.Color.FromArgb(125, 0, 0, 255));
-        }
-        */
         //histImage.SetPixel(i, histImage.Height-r-1, System.Drawing.Color.FromArgb(255, 0, 0));
         //histImage.SetPixel(i, histImage.Height-b-1, System.Drawing.Color.FromArgb(0, 0, 255));
 
         for (int j = 1; j < colorBandHeight; j++)
         {
-          histImage.SetPixel(i, histImage.Height - j, System.Drawing.Color.FromArgb(i, i, i));
+          hR.SetPixel(i, hR.Height - j, System.Drawing.Color.FromArgb(i, i, i));
+          hG.SetPixel(i, hG.Height - j, System.Drawing.Color.FromArgb(i, i, i));
+          hB.SetPixel(i, hB.Height - j, System.Drawing.Color.FromArgb(i, i, i));
         }
       }
 
-      histImage.Save(imagefile.Hist);
-      imgHist.Source = ImageHelper.LoadBitmap(imagefile.Hist);
+      hR.Save(imagefile.HistR);
+      hG.Save(imagefile.HistG);
+      hB.Save(imagefile.HistB);
+      imgHistR.Source = ImageHelper.LoadBitmap(imagefile.HistR);
+      imgHistG.Source = ImageHelper.LoadBitmap(imagefile.HistG);
+      imgHistB.Source = ImageHelper.LoadBitmap(imagefile.HistB);
 
       filtered = true;
       imgClustered.Source = ImageHelper.LoadBitmap(imagefile.Filtered);
@@ -183,7 +198,9 @@ namespace Greenhouse__
         var file = (string)image.Tag;
         var paths = new ImageFile(file);
         RemoveItem(file);
-        File.Delete(paths.Hist);
+        File.Delete(paths.HistR);
+        File.Delete(paths.HistG);
+        File.Delete(paths.HistB);
         File.Delete(paths.Original);
         File.Delete(paths.Thumb);
         File.Delete(paths.Filtered);

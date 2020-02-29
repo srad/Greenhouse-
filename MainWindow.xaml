@@ -25,35 +25,76 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="*"/>
       <RowDefinition Height="*"/>
-      <RowDefinition Height="50"/>
+      <RowDefinition Height="60"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>
       <ColumnDefinition Width="*"/>
-      <ColumnDefinition Width="190"/>
+      <ColumnDefinition Width="194"/>
     </Grid.ColumnDefinitions>
 
     <Grid Grid.Row="0" Grid.Column="2" Grid.RowSpan="3">
-      <ListView x:Name="TvBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180" Margin="0,5,0,5">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate>
-            <StackPanel Orientation="Vertical"></StackPanel>
-          </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ListView.ItemTemplate>
-          <DataTemplate>
-            <StackPanel Orientation="Vertical" Background="Gray" Width="165" HorizontalAlignment="Center" Margin="0,0,0,5">
-              <Image MouseDown="Image_MouseDown" Tag="{Binding File}" Margin="0,5,0,0" Source="{Binding ImageData}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Width="154" Stretch="UniformToFill" />
-              <Button x:Name="btnDeleteImage" Tag="{Binding File}" Content="Delete" Click="btnDeleteImage_Click" Margin="5"/>
-              <!--<TextBlock Text="{Binding Title}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />-->
-            </StackPanel>
-          </DataTemplate>
-        </ListView.ItemTemplate>
-      </ListView>
+      <ScrollViewer 
+        Grid.Row="1" 
+        CanContentScroll="True" 
+        VerticalScrollBarVisibility="Auto" 
+        HorizontalScrollBarVisibility="Disabled">
+        <ListView x:Name="TvBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180" Margin="0,5,0,5">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Vertical"></StackPanel>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ListView.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Vertical" Background="Gray" Width="165" HorizontalAlignment="Center" Margin="0,0,0,5">
+                <Image MouseDown="Image_MouseDown" Tag="{Binding File}" Margin="0,5,0,0" Source="{Binding ImageData}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Width="154" Stretch="UniformToFill" />
+                <Button x:Name="btnDeleteImage" Tag="{Binding File}" Content="Delete" Click="btnDeleteImage_Click" Margin="5"/>
+                <!--<TextBlock Text="{Binding Title}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />-->
+              </StackPanel>
+            </DataTemplate>
+          </ListView.ItemTemplate>
+        </ListView>
+      </ScrollViewer>
     </Grid>
 
     <Grid Margin="5,5,5,0" Grid.Row="0" Grid.Column="0" Background="FloralWhite">
-      <Image x:Name="imgHist" Source="./Resources/leaf.png"/>
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="100"/>
+          <RowDefinition Height="35"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" Grid.Row="0">
+          <Border BorderBrush="Gray" BorderThickness="1" Margin="2">
+            <Image x:Name="imgHistR" Source="./Resources/leaf.png" Margin="0"/>
+          </Border>
+        </Grid>
+        <Grid Grid.Column="0" Grid.Row="1">
+          <Label Content="Histogram R" Margin="0" FontSize="15" FontWeight="Bold"  HorizontalAlignment="Center"/>
+        </Grid>
+        <Grid Grid.Column="1" Grid.Row="1">
+          <Label Content="Histogram G" Margin="0" FontSize="15" FontWeight="Bold"  HorizontalAlignment="Center"/>
+        </Grid>
+        <Grid Grid.Column="2" Grid.Row="1">
+          <Label Content="Histogram B" Margin="0" FontSize="15" FontWeight="Bold"  HorizontalAlignment="Center"/>
+        </Grid>
+        <Grid Grid.Column="1" Grid.Row="0">
+          <Border BorderBrush="Gray" BorderThickness="1" Margin="2">
+            <Image x:Name="imgHistG" Source="./Resources/leaf.png" Margin="0"/>
+          </Border>
+        </Grid>
+        <Grid Grid.Column="2" Grid.Row="0">
+          <Border BorderBrush="Gray" BorderThickness="1" Margin="2">
+            <Image x:Name="imgHistB" Source="./Resources/leaf.png" Margin="0"/>
+          </Border>
+        </Grid>
+      </Grid>
     </Grid>
     <Grid Margin="5,5,5,0" Grid.Row="1" Grid.Column="0" Background="FloralWhite">
       <Image Source="./Resources/leaf.png"/>
@@ -69,6 +110,13 @@
         <StackPanel Orientation="Horizontal">
           <Button x:Name="btnOpenFile" Click="btnOpenFile_Click" Width="200">Open Image</Button>
           <Button x:Name="btnOpenFolder" Width="200" Click="btnOpenFolder_Click">Open Folder</Button>
+          <StackPanel Orientation="Vertical"  VerticalAlignment="Center" Height="40">
+            <Slider x:Name="GreenThreshold" Minimum="1" Maximum="100" Width="130" TickFrequency="1" IsSnapToTickEnabled="True" Value="90"/>
+            <StackPanel Orientation="Horizontal">
+              <Label Content="Green Threshold" FontSize="13"/>
+              <Label Content="{Binding Value, ElementName=GreenThreshold}" FontSize="13"/>
+            </StackPanel>
+          </StackPanel>
         </StackPanel>
       </Grid>
     </Grid>

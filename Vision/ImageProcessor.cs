@@ -1,7 +1,9 @@
 ﻿using Greenhouse.Models;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Timers;
@@ -27,10 +29,10 @@ namespace Greenhouse.Vision
     /// it takes probably 30-50x longer.
     /// </summary>
     /// <returns></returns>
-    public RGBHistogram Start()
+    public RGBHistogram Start(double greenThreshold)
     {
       progress = 0;
-      var hist = new RGBHistogram();
+      greenThreshold = (double)greenThreshold / 100;
 
       var rect = new Rectangle(0, 0, Bitmap.Width, Bitmap.Height);
       var data = Bitmap.LockBits(rect, ImageLockMode.ReadWrite, Bitmap.PixelFormat);
@@ -42,20 +44,31 @@ namespace Greenhouse.Vision
       //copy pixels to buffer
       Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
 
-      RGBHistogram leftUp = new RGBHistogram(), rightUp = new RGBHistogram(), leftLow = new RGBHistogram(), rightLow = new RGBHistogram();
-
       var w = data.Width;
       var h = data.Height;
+      var results = new List<RGBHistogram>();
 
-      // Run on 4 threads
-      Parallel.Invoke(
-        () => leftUp = CreateHist(buffer, 0, 0, w / 2, h / 2, w, depth),
-        () => rightUp = CreateHist(buffer, w / 2, 0, w, h / 2, w, depth),
-        () => leftLow = CreateHist(buffer, 0, h / 2, w / 2, h, w, depth),
-        () => rightLow = CreateHist(buffer, w / 2, h / 2, w, h, w, depth)
-      );
-
-      //Copy the buffer back to image
+      try
+      {
+        // Run on 4 threads
+        Parallel.Invoke(
+          () => results.Add(RGBHistogram.CreateHist(greenThreshold, buffer, 0, 0, w / 2, h / 2, w, depth)),
+          () => results.Add(RGBHistogram.CreateHist(greenThreshold, buffer, w / 2, 0, w, h / 2, w, depth)),
+          () => results.Add(RGBHistogram.CreateHist(greenThreshold, buffer, 0, h / 2, w / 2, h, w, depth)),
+          () => results.Add(RGBHistogram.CreateHist(greenThreshold, buffer, w / 2, h / 2, w, h, w, depth))
+        );
+        // These lines can generate an arbritrary number of threads but they raise random exceptions
+        // var threads = Environment.ProcessorCount;
+        // var actions = new List<Action>();
+        // var chunks = h / threads;
+        // Parallel.For(0, threads, i => actions.Add(() => results.Add(CreateHist(buffer, 0, i * chunks, w, i * chunks + chunks, w, depth))));
+        // Parallel.Invoke(actions.ToArray());
+      }
+      catch (Exception e)
+      {
+        System.Windows.MessageBox.Show("Error :" + e.Message);
+      }
+      // Copy the buffer back to image
       Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
 
       Bitmap.UnlockBits(data);
@@ -64,42 +77,12 @@ namespace Greenhouse.Vision
       {
         Bitmap.Save(ImageFile.Filtered, ImageFormat.Jpeg);
       }
-      catch(Exception e)
+      catch (Exception e)
       {
         System.Windows.MessageBox.Show("Error :" + e.Message);
       }
 
-      hist.Add(leftUp);
-      hist.Add(rightUp);
-      hist.Add(leftLow);
-      hist.Add(rightLow);
-
-      return hist;
-    }
-
-    private static RGBHistogram CreateHist(byte[] buffer, int x, int y, int endx, int endy, int width, int depth)
-    {
-      var rgb = new RGBHistogram();
-      var eps = 1;
-
-      for (int i = x; i < endx; i++)
-      {
-        for (int j = y; j < endy; j++)
-        {
-          //System.Threading.Interlocked.Increment(ref progress);
-          var offset = ((j * width) + i) * depth;
-          Byte b = buffer[offset];
-          Byte g = buffer[offset + 1];
-          Byte r = buffer[offset + 2];
-          // Byte a = buffer[offset + 3];
-          rgb.r[r]++;
-          rgb.g[g]++;
-          rgb.b[b]++;
-          // Green normalize
-          buffer[offset + 2] = (byte)((g + eps) / ((Math.Max(r, b) + eps)));
-        }
-      }
-      return rgb;
+      return results.Aggregate(new RGBHistogram(), (a, b) => a.Add(b));
     }
   }
 }

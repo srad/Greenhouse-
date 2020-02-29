@@ -14,7 +14,10 @@ namespace Greenhouse.Models
     public string Original;
     public string Thumb;
     public string Filtered;
-    public string Hist;
+    //public string Hist;
+    public string HistR;
+    public string HistG;
+    public string HistB;
 
     public ImageFile(string filename)
     {
@@ -22,7 +25,9 @@ namespace Greenhouse.Models
       Original = ImagePath + Filename;
       Thumb = ThumbsPath + Filename;
       Filtered = FilteredPath + Filename;
-      Hist = HistPath + Filename;
+      HistR = HistPath + "r_" + Filename;
+      HistG = HistPath + "g_" + Filename;
+      HistB = HistPath + "b_" + Filename;
     }
   }
 }
