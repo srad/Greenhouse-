@@ -1,8 +1,8 @@
 ﻿using System.Windows.Media.Imaging;
 
-namespace Greenhouse.Models
+namespace Greenhouse.ViewModels
 {
-  public class ImageListView
+  public class ImageListViewItem
   {
     private string _File;
     private string _Title;

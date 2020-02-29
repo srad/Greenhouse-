@@ -1,9 +1,9 @@
-﻿<Window x:Class="Greenhouse__.MainWindow"
+﻿<Window x:Class="Greenhouse.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Greenhouse__"
+        xmlns:local="clr-namespace:Greenhouse"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="Greenhouse++" 
@@ -23,11 +23,11 @@
   </Window.Resources>
   <Grid>
     <Grid.RowDefinitions>
+      <RowDefinition Height="29"/>
       <RowDefinition Height="*"/>
-      <RowDefinition Height="30"/>
+      <RowDefinition Height="35"/>
       <RowDefinition Height="*"/>
-      <RowDefinition Height="30"/>
-      <RowDefinition Height="60"/>
+      <RowDefinition Height="35"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>
@@ -35,20 +35,28 @@
       <ColumnDefinition Width="194"/>
     </Grid.ColumnDefinitions>
 
-    <Grid Grid.Row="1" Grid.Column="0" Margin="5,0,5,0">
+    <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" FontSize="16">
+      <MenuItem Header="File">
+        <MenuItem Header="Open Image" Click="btnOpenFile_Click"/>
+        <MenuItem Header="Open Folder" Click="BtnOpenFolder_Click"/>
+        <MenuItem Header="Quit" Command="ApplicationCommands.Close"/>
+      </MenuItem>
+    </Menu>
+    
+    <Grid Grid.Row="2" Grid.Column="0" Margin="5,0,5,0">
       <Label Content="Histograms" Background="AntiqueWhite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
     </Grid>
-    <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,0,0">
+    <Grid Grid.Row="2" Grid.Column="1" Margin="0,0,0,0">
       <Label Content="Original Image" Background="AntiqueWhite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
     </Grid>
-    <Grid Grid.Row="3" Grid.Column="1" Margin="0,0,0,0">
+    <Grid Grid.Row="4" Grid.Column="1" Margin="0,0,0,5">
       <Label Content="Green Theshold" Background="GreenYellow" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
     </Grid>
-    <Grid Grid.Row="3" Grid.Column="0" Margin="5,0,5,0">
+    <Grid Grid.Row="4" Grid.Column="0" Margin="5,0,5,5">
       <Label Content="Red Theshold" Background="PaleVioletRed" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
     </Grid>
 
-    <Grid Grid.Row="0" Grid.Column="2" Grid.RowSpan="5">
+    <Grid Grid.Row="1" Grid.Column="2" Grid.RowSpan="5">
       <ScrollViewer 
         Grid.Row="1" 
         CanContentScroll="True" 
@@ -64,7 +72,7 @@
             <DataTemplate>
               <StackPanel Orientation="Vertical" Background="Gray" Width="160" HorizontalAlignment="Center" Margin="0,5,0,0">
                 <Image MouseDown="Image_MouseDown" Tag="{Binding File}" Margin="0" Source="{Binding ImageData}" HorizontalAlignment="Stretch" VerticalAlignment="Top" />
-                <Button x:Name="btnDeleteImage" Tag="{Binding File}" Content="Delete" Click="btnDeleteImage_Click" Margin="0" HorizontalAlignment="Stretch"/>
+                <Button x:Name="btnDeleteImage" Tag="{Binding File}" Content="Delete" Click="BtnDeleteImage_Click" Margin="0" HorizontalAlignment="Stretch"/>
               </StackPanel>
             </DataTemplate>
           </ListView.ItemTemplate>
@@ -72,7 +80,7 @@
       </ScrollViewer>
     </Grid>
 
-    <Grid Margin="5,5,5,0" Grid.Row="0" Grid.Column="0" Background="FloralWhite">
+    <Grid Margin="5,5,5,0" Grid.Row="1" Grid.Column="0" Background="FloralWhite">
       <Grid>
         <Grid.RowDefinitions>
           <RowDefinition Height="100"/>
@@ -110,7 +118,7 @@
         </Grid>
       </Grid>
     </Grid>
-    <Grid Margin="5,5,5,0" Grid.Row="2" Grid.Column="0" Background="FloralWhite">
+    <Grid Margin="5,5,5,0" Grid.Row="3" Grid.Column="0" Background="FloralWhite">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*"/>
         <ColumnDefinition Width="40"/>
@@ -123,11 +131,11 @@
       <Image x:Name="filterRed" Source="./Resources/leaf.png" Grid.Column="0" Grid.RowSpan="3"/>
       <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" x:Name="RedThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
       <Label Grid.Row="1" Grid.Column="1" Content="{Binding Value, ElementName=RedThreshold}" FontSize="13"/>
-      <Button Grid.Column="2" Grid.Row="2" Click="FilterRed_MouseDown">
+      <Button Grid.Column="2" Grid.Row="2" Click="OpenRedFiltered">
         <Image Source="./Resources/Button/photo.png"/>
       </Button>
     </Grid>
-    <Grid Margin="0,5,0,0" Grid.Row="0" Grid.Column="1" Background="FloralWhite">
+    <Grid Margin="0,5,0,0" Grid.Row="1" Grid.Column="1" Background="FloralWhite">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"/>
@@ -138,7 +146,7 @@
         </Grid>
         <Grid Grid.Column="1">
           <StackPanel Orientation="Vertical" VerticalAlignment="Top">
-            <Button>
+            <Button x:Name="ButtonUndoGreen" Click="ButtonUndoGreen_Click">
               <Image Source="./Resources/Button/undo.png" Width="16" Height="16" />
             </Button>
             <Button>
@@ -157,7 +165,7 @@
         </Grid>
       </Grid>
     </Grid>
-    <Grid Margin="0,5,0,0" Grid.Row="2" Grid.Column="1" Background="FloralWhite">
+    <Grid Margin="0,5,0,0" Grid.Row="3" Grid.Column="1" Background="FloralWhite">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*"/>
         <ColumnDefinition Width="40"/>
@@ -167,21 +175,18 @@
         <RowDefinition Height="30"/>
         <RowDefinition Height="40"/>
       </Grid.RowDefinitions>
-      <Image Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" x:Name="filterGreen" Source="./Resources/leaf.png" />
+      <Border BorderBrush="Gray" BorderThickness="1" Margin="5" Grid.Column="0" Grid.Row="0" Grid.RowSpan="3">
+        <Canvas x:Name="canvasGreen" MouseDown="CanvasGreen_MouseDown" MouseMove="CanvasGreen_MouseMove" MouseUp="CanvasGreen_MouseUp">
+          <Canvas.Background>
+            <ImageBrush AlignmentX="Left" AlignmentY="Top" Stretch="Uniform" x:Name="filterGreen" ImageSource="./Resources/leaf.png"/>
+          </Canvas.Background>
+        </Canvas>
+      </Border>
       <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" x:Name="GreenThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
       <Label Grid.Row="1" Grid.Column="1" Content="{Binding Value, ElementName=GreenThreshold}" FontSize="13"/>
-      <Button Grid.Column="2" Grid.Row="2" Click="FilterGreen_MouseDown">
+      <Button Grid.Column="2" Grid.Row="2" Click="OpenGreenFiltered">
         <Image Source="./Resources/Button/photo.png"/>
       </Button>
-    </Grid>
-    <Grid Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2">
-      <Grid Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center">
-        <StackPanel Orientation="Horizontal">
-          <Label x:Name="working" Content="Working...." VerticalAlignment="Center" FontWeight="Bold" FontSize="16" Visibility="Hidden"/>
-          <Button x:Name="btnOpenFile" Click="btnOpenFile_Click" Width="200">Open Image</Button>
-          <Button x:Name="btnOpenFolder" Width="200" Click="BtnOpenFolder_Click">Open Folder</Button>
-        </StackPanel>
-      </Grid>
     </Grid>
   </Grid>
 </Window>

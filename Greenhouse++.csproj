@@ -61,7 +61,8 @@
     <Compile Include="Models\FilterThesholds.cs" />
     <Compile Include="Models\ImageFile.cs" />
     <Compile Include="Models\ImageManager.cs" />
-    <Compile Include="Models\ImageListView.cs" />
+    <Compile Include="ViewModels\ImageListViewItem.cs" />
+    <Compile Include="ViewModels\ImageListView.cs" />
     <Compile Include="Vision\ImageHelper.cs" />
     <Compile Include="Vision\ImageProcessor.cs" />
     <Compile Include="Vision\Histogram.cs" />

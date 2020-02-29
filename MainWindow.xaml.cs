@@ -1,16 +1,15 @@
 ﻿using Greenhouse.Models;
+using Greenhouse.ViewModels;
 using Greenhouse.Vision;
 using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 
-namespace Greenhouse__
+namespace Greenhouse
 {
   /// <summary>
   /// Interaction logic for MainWindow.xaml
@@ -19,8 +18,12 @@ namespace Greenhouse__
   {
     private ImageProcessor ImageProcessor;
     private ImageManager CurrentFile;
-    private readonly ObservableCollection<ImageListView> ImageFileList = new ObservableCollection<ImageListView>();
+    private readonly ImageListView ImageListView = new ImageListView();
     private bool drawPoints = false;
+    private bool PrimaryMouseDown = false;
+    private int GridY = 30;
+    private int GridX = 30;
+    private bool[][] GridSelected;
 
     public MainWindow()
     {
@@ -29,35 +32,10 @@ namespace Greenhouse__
       var images = Directory.GetFiles(ImageManager.ThumbsPath, "*.jpg");
       foreach (var image in images)
       {
-        AddImageToListView(image);
+        ImageListView.AddImage(image);
       }
 
-      TvBox.ItemsSource = ImageFileList;
-    }
-
-    private void AddImageToListView(string file)
-    {
-      var item = new ImageListView
-      {
-        File = Path.GetFileName(file),
-        ImageData = ImageHelper.LoadBitmap(file),
-        Title = "Image"
-      };
-
-      ImageFileList.Add(item);
-    }
-
-    private void RemoveItem(string filename)
-    {
-      for (int i = 0; i < ImageFileList.Count; i++)
-      {
-        if (ImageFileList[i].File == filename)
-        {
-          ImageFileList[i].ImageData = null;
-          GC.Collect();
-          ImageFileList.Remove(ImageFileList[i]);
-        }
-      }
+      TvBox.ItemsSource = ImageListView;
     }
 
     private void btnOpenFile_Click(object sender, RoutedEventArgs e)
@@ -79,7 +57,7 @@ namespace Greenhouse__
         // Create Thumb
         var thumb = ImageHelper.Resize(CurrentFile.Original.Path, 300, 200);
         thumb.Save(CurrentFile.Thumb.Path);
-        AddImageToListView(CurrentFile.Thumb.Path);
+        ImageListView.AddImage(CurrentFile.Thumb.Path);
 
         ProcessFile();
       }
@@ -87,9 +65,9 @@ namespace Greenhouse__
 
     private void ProcessFile()
     {
-      working.Visibility = Visibility.Visible;
+      canvasGreen.Children.Clear();
       imgInput.Source = CurrentFile.Original.BitmapImage.Value;
-      ImageProcessor = new ImageProcessor(CurrentFile, (progress) => {});
+      ImageProcessor = new ImageProcessor(CurrentFile, (progress) => { });
 
       // Color distribution of the original image
       var histogram = ImageProcessor.Start(new FilterThesholds(green: GreenThreshold.Value, red: RedThreshold.Value));
@@ -150,11 +128,10 @@ namespace Greenhouse__
       imgHistG.Source = CurrentFile.HistG.BitmapImage.Value;
       imgHistB.Source = CurrentFile.HistB.BitmapImage.Value;
 
-      working.Visibility = Visibility.Hidden;
       filterRed.Source = CurrentFile.FilteredRed.BitmapImage.Value;
-      filterGreen.Source = CurrentFile.FilteredGreen.BitmapImage.Value;
+      filterGreen.ImageSource = CurrentFile.FilteredGreen.BitmapImage.Value;
     }
-    
+
     private void Image_MouseDown(object sender, MouseButtonEventArgs e)
     {
       var image = sender as System.Windows.Controls.Image;
@@ -175,7 +152,7 @@ namespace Greenhouse__
       Process.Start(ImageManager.BasePath);
     }
 
-    private void btnDeleteImage_Click(object sender, RoutedEventArgs e)
+    private void BtnDeleteImage_Click(object sender, RoutedEventArgs e)
     {
       var messageBoxResult = System.Windows.MessageBox.Show("Are you sure?", "Delete Confirmation", System.Windows.MessageBoxButton.YesNo);
       if (messageBoxResult == MessageBoxResult.Yes)
@@ -183,19 +160,75 @@ namespace Greenhouse__
         var image = sender as System.Windows.Controls.Button;
         var file = (string)image.Tag;
         var paths = new ImageManager(file);
-        RemoveItem(file);
+        ImageListView.RemoveItem(file);
         paths.Delete();
       }
     }
 
-    private void FilterGreen_MouseDown(object sender, RoutedEventArgs e)
+    private void OpenGreenFiltered(object sender, RoutedEventArgs e)
     {
       OpenFile(CurrentFile.FilteredGreen.Path);
     }
 
-    private void FilterRed_MouseDown(object sender, RoutedEventArgs e)
+    private void OpenRedFiltered(object sender, RoutedEventArgs e)
     {
       OpenFile(CurrentFile.FilteredRed.Path);
+    }
+
+    public static void Square(int x, int y, int width, int height, System.Windows.Controls.Canvas cv)
+    {
+      if (x < 0 || y < 0)
+      {
+        return;
+      }
+      var b = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(25, 255, 100, 0));
+      var rect = new System.Windows.Shapes.Rectangle()
+      {
+        Width = width,
+        Height = height,
+        Stroke = b,
+        StrokeThickness = width / 2
+      };
+
+      cv.Children.Add(rect);
+
+      rect.SetValue(System.Windows.Controls.Canvas.LeftProperty, (double)x);
+      rect.SetValue(System.Windows.Controls.Canvas.TopProperty, (double)y);
+    }
+
+    private void CanvasGreen_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+      PrimaryMouseDown = true;
+      var info = e.GetPosition(canvasGreen);
+      Square((int)info.X, (int)info.Y, 30, 30, canvasGreen);
+    }
+
+    private void CanvasGreen_MouseMove(object sender, MouseEventArgs e)
+    {
+      if (PrimaryMouseDown)
+      {
+        var info = e.GetPosition(canvasGreen);
+        Debug.WriteLine(info.X + "," + info.Y);
+        Square((int)info.X, (int)info.Y, 30, 30, canvasGreen);
+      }
+    }
+
+    private void CanvasGreen_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+      PrimaryMouseDown = false;
+    }
+
+    private void ButtonUndoGreen_Click(object sender, RoutedEventArgs e)
+    {
+      for (int i = 0; i < 30; i++)
+      {
+        if (canvasGreen.Children.Count == 0)
+        {
+          break;
+        }
+        canvasGreen.Children.Remove(canvasGreen.Children[canvasGreen.Children.Count - 1]);
+      }
+      Debug.WriteLine(canvasGreen.Children.Count);
     }
   }
 }
