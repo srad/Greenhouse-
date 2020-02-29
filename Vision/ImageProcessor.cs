@@ -1,5 +1,6 @@
 ﻿using Greenhouse.Models;
 using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 
 namespace Greenhouse.Vision
@@ -32,6 +33,7 @@ namespace Greenhouse.Vision
       {
         filterResult.RedBitmap.Save(ImageFile.FilteredRed.Path, ImageFormat.Jpeg);
         filterResult.GreenBitmap.Save(ImageFile.FilteredGreen.Path, ImageFormat.Jpeg);
+        filterResult.Histogram.Draw(filterResult, false, 256, 200);
       }
       catch (Exception e)
       {

@@ -3,7 +3,7 @@ using Greenhouse.ViewModels;
 using Greenhouse.Vision;
 using Microsoft.Win32;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -19,11 +19,13 @@ namespace Greenhouse
     private ImageProcessor ImageProcessor;
     private ImageManager CurrentFile;
     private readonly ImageListView ImageListView = new ImageListView();
-    private bool drawPoints = false;
+    private bool DrawPointHistogram = false;
     private bool PrimaryMouseDown = false;
-    private int GridY = 30;
-    private int GridX = 30;
-    private bool[][] GridSelected;
+    private int GridY = 40;
+    private int GridX = 40;
+    private bool ImageLoaded = false;
+    private bool[,] GridSelection;
+    private Stack<UIElement> RedoStack = new Stack<UIElement>();
 
     public MainWindow()
     {
@@ -72,64 +74,29 @@ namespace Greenhouse
       // Color distribution of the original image
       var histogram = ImageProcessor.Start(new FilterThesholds(green: GreenThreshold.Value, red: RedThreshold.Value));
 
-      var hR = new System.Drawing.Bitmap(256, 200);
-      var hG = new System.Drawing.Bitmap(256, 200);
-      var hB = new System.Drawing.Bitmap(256, 200);
-      var max = histogram.Max();
-      var maxAll = Math.Max(Math.Max(max.B, max.G), max.R);
-      var colorBandHeight = 4;
+      histogram.HistogramR.Save(CurrentFile.HistR.Path);
+      histogram.HistogramG.Save(CurrentFile.HistG.Path);
+      histogram.HistogramB.Save(CurrentFile.HistB.Path);
 
-      for (int i = 0; i < Histogram.MAX; i++)
-      {
-        int r = (int)(((double)histogram.R[i] / (double)(maxAll + 1)) * hR.Height);
-        int g = (int)(((double)histogram.G[i] / (double)(maxAll + 1)) * hG.Height);
-        int b = (int)(((double)histogram.B[i] / (double)(maxAll + 1)) * hB.Height);
-
-        var green = System.Drawing.Color.FromArgb(0, i, 0);
-        var red = System.Drawing.Color.FromArgb(i, 0, 0);
-        var blue = System.Drawing.Color.FromArgb(0, 0, i);
-
-        if (drawPoints)
-        {
-          hR.SetPixel(i, hR.Height - r - 1, System.Drawing.Color.FromArgb(125, 255, 0, 0));
-          hG.SetPixel(i, hG.Height - g - 1, System.Drawing.Color.FromArgb(125, 0, 255, 0));
-          hB.SetPixel(i, hB.Height - b - 1, System.Drawing.Color.FromArgb(125, 0, 0, 255));
-        }
-        else
-        {
-          for (int yR = hR.Height - r - 1; yR < hR.Height - 1; yR++)
-          {
-            hR.SetPixel(i, yR, System.Drawing.Color.FromArgb(125, 255, 0, 0));
-          }
-          for (int yG = hG.Height - g - 1; yG < hG.Height - 1; yG++)
-          {
-            hG.SetPixel(i, yG, System.Drawing.Color.FromArgb(125, 0, 255, 0));
-          }
-          for (int yB = hB.Height - b - 1; yB < hB.Height - 1; yB++)
-          {
-            hB.SetPixel(i, yB, System.Drawing.Color.FromArgb(125, 0, 0, 255));
-          }
-        }
-        //histImage.SetPixel(i, histImage.Height-r-1, System.Drawing.Color.FromArgb(255, 0, 0));
-        //histImage.SetPixel(i, histImage.Height-b-1, System.Drawing.Color.FromArgb(0, 0, 255));
-
-        for (int j = 1; j < colorBandHeight; j++)
-        {
-          hR.SetPixel(i, hR.Height - j, System.Drawing.Color.FromArgb(i, i, i));
-          hG.SetPixel(i, hG.Height - j, System.Drawing.Color.FromArgb(i, i, i));
-          hB.SetPixel(i, hB.Height - j, System.Drawing.Color.FromArgb(i, i, i));
-        }
-      }
-
-      hR.Save(CurrentFile.HistR.Path);
-      hG.Save(CurrentFile.HistG.Path);
-      hB.Save(CurrentFile.HistB.Path);
       imgHistR.Source = CurrentFile.HistR.BitmapImage.Value;
       imgHistG.Source = CurrentFile.HistG.BitmapImage.Value;
       imgHistB.Source = CurrentFile.HistB.BitmapImage.Value;
 
       filterRed.Source = CurrentFile.FilteredRed.BitmapImage.Value;
       filterGreen.ImageSource = CurrentFile.FilteredGreen.BitmapImage.Value;
+
+      int sizeX = (int)(CurrentFile.FilteredGreen.BitmapImage.Value.Width /  GridX) + 1;
+      int sizeY = (int)(CurrentFile.FilteredGreen.BitmapImage.Value.Height / GridY) + 1;
+      GridSelection = new bool[sizeX, sizeY];
+      for (int x = 0; x < sizeX; x++)
+      {
+        for (int y = 0; y < sizeY; y++)
+        {
+          GridSelection[x, y] = false;
+        }
+      }
+      ImageLoaded = true;
+      RedoStack.Clear();
     }
 
     private void Image_MouseDown(object sender, MouseButtonEventArgs e)
@@ -142,6 +109,10 @@ namespace Greenhouse
 
     void OpenFile(string file)
     {
+      if (!ImageLoaded)
+      {
+        return;
+      }
       Process photoViewer = new Process();
       photoViewer.StartInfo.FileName = file;
       photoViewer.Start();
@@ -175,19 +146,19 @@ namespace Greenhouse
       OpenFile(CurrentFile.FilteredRed.Path);
     }
 
-    public static void Square(int x, int y, int width, int height, System.Windows.Controls.Canvas cv)
+    public static void Rect(int x, int y, int width, int height, System.Windows.Controls.Canvas cv)
     {
       if (x < 0 || y < 0)
       {
         return;
       }
-      var b = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(25, 255, 100, 0));
+      var b = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(80, 255, 0, 255));
       var rect = new System.Windows.Shapes.Rectangle()
       {
         Width = width,
         Height = height,
         Stroke = b,
-        StrokeThickness = width / 2
+        StrokeThickness = width/2
       };
 
       cv.Children.Add(rect);
@@ -196,21 +167,57 @@ namespace Greenhouse
       rect.SetValue(System.Windows.Controls.Canvas.TopProperty, (double)y);
     }
 
+    private class GridV2
+    {
+      public int X;
+      public int Y;
+      public int GridX;
+      public int GridY;
+    }
+
+    private GridV2 MouseGridPos(Point e)
+    {
+      return new GridV2
+      {
+        X = (int)Math.Floor(e.X / GridX),
+        Y = (int)Math.Floor(e.Y / GridY),
+        GridX = (int)Math.Floor(e.X / GridX) * GridX,
+        GridY = (int)Math.Floor(e.Y / GridY) * GridY
+      };
+    }
+
     private void CanvasGreen_MouseDown(object sender, MouseButtonEventArgs e)
     {
       PrimaryMouseDown = true;
-      var info = e.GetPosition(canvasGreen);
-      Square((int)info.X, (int)info.Y, 30, 30, canvasGreen);
+      DrawGrid(e.GetPosition(canvasGreen));
+    }
+
+    private void DrawGrid(Point e)
+    {
+      if (!ImageLoaded)
+      {
+        return;
+      }
+      if (!PrimaryMouseDown)
+      {
+        return;
+      }
+      PrimaryMouseDown = true;
+
+      var pos = MouseGridPos(e);
+      if (GridSelection[pos.X, pos.Y])
+      {
+        return;
+      }
+      GridSelection[pos.X, pos.Y] = true;
+
+      Debug.WriteLine(pos);
+      Rect(pos.GridX, pos.GridY, GridX, GridY, canvasGreen);
     }
 
     private void CanvasGreen_MouseMove(object sender, MouseEventArgs e)
     {
-      if (PrimaryMouseDown)
-      {
-        var info = e.GetPosition(canvasGreen);
-        Debug.WriteLine(info.X + "," + info.Y);
-        Square((int)info.X, (int)info.Y, 30, 30, canvasGreen);
-      }
+      DrawGrid(e.GetPosition(canvasGreen));
     }
 
     private void CanvasGreen_MouseUp(object sender, MouseButtonEventArgs e)
@@ -220,15 +227,20 @@ namespace Greenhouse
 
     private void ButtonUndoGreen_Click(object sender, RoutedEventArgs e)
     {
-      for (int i = 0; i < 30; i++)
+      if (canvasGreen.Children.Count > 0)
       {
-        if (canvasGreen.Children.Count == 0)
-        {
-          break;
-        }
+        var lastItem = canvasGreen.Children[canvasGreen.Children.Count - 1];
+        RedoStack.Push(lastItem);
         canvasGreen.Children.Remove(canvasGreen.Children[canvasGreen.Children.Count - 1]);
       }
-      Debug.WriteLine(canvasGreen.Children.Count);
+    }
+
+    private void RedoGreenButton_Click(object sender, RoutedEventArgs e)
+    {
+      if(RedoStack.Count > 0)
+      {
+        canvasGreen.Children.Add(RedoStack.Pop());
+      }
     }
   }
 }

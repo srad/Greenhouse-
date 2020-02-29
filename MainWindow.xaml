@@ -42,7 +42,7 @@
         <MenuItem Header="Quit" Command="ApplicationCommands.Close"/>
       </MenuItem>
     </Menu>
-    
+
     <Grid Grid.Row="2" Grid.Column="0" Margin="5,0,5,0">
       <Label Content="Histograms" Background="AntiqueWhite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
     </Grid>
@@ -141,27 +141,8 @@
           <ColumnDefinition Width="*"/>
           <ColumnDefinition Width="50"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0">
+        <Grid Grid.Column="0" Grid.ColumnSpan="2">
           <Image Margin="5" x:Name="imgInput" Source="./Resources/leaf.png"/>
-        </Grid>
-        <Grid Grid.Column="1">
-          <StackPanel Orientation="Vertical" VerticalAlignment="Top">
-            <Button x:Name="ButtonUndoGreen" Click="ButtonUndoGreen_Click">
-              <Image Source="./Resources/Button/undo.png" Width="16" Height="16" />
-            </Button>
-            <Button>
-            <Image Source="./Resources/Button/redo.png" Width="16" Height="16" />
-            </Button>
-            <Button>
-              <Image Source="./Resources/Button/save.png" Width="16" Height="16" />
-            </Button>
-            <Button>
-              <Image Source="./Resources/Button/shape-green.png" Width="16" Height="16" />
-            </Button>
-            <Button>
-              <Image Source="./Resources/Button/shape-red.png" Width="16" Height="16" />
-            </Button>
-          </StackPanel>
         </Grid>
       </Grid>
     </Grid>
@@ -173,20 +154,31 @@
       <Grid.RowDefinitions>
         <RowDefinition Height="*"/>
         <RowDefinition Height="30"/>
-        <RowDefinition Height="40"/>
+        <RowDefinition Height="100"/>
       </Grid.RowDefinitions>
-      <Border BorderBrush="Gray" BorderThickness="1" Margin="5" Grid.Column="0" Grid.Row="0" Grid.RowSpan="3">
-        <Canvas x:Name="canvasGreen" MouseDown="CanvasGreen_MouseDown" MouseMove="CanvasGreen_MouseMove" MouseUp="CanvasGreen_MouseUp">
+      <Grid x:Name="GridGreen" Margin="5" Grid.Column="0" Grid.Row="0" Grid.RowSpan="3">
+        <Canvas Width="{Binding Width, ElementName=GridGreen}" Height="{Binding Height, ElementName=GridGreen}" x:Name="canvasGreen" MouseDown="CanvasGreen_MouseDown" MouseMove="CanvasGreen_MouseMove" MouseUp="CanvasGreen_MouseUp">
           <Canvas.Background>
-            <ImageBrush AlignmentX="Left" AlignmentY="Top" Stretch="Uniform" x:Name="filterGreen" ImageSource="./Resources/leaf.png"/>
+            <ImageBrush Stretch="Uniform" AlignmentX="Left" AlignmentY="Top" x:Name="filterGreen" ImageSource="./Resources/leaf.png" />
           </Canvas.Background>
         </Canvas>
-      </Border>
+      </Grid>
       <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" x:Name="GreenThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
       <Label Grid.Row="1" Grid.Column="1" Content="{Binding Value, ElementName=GreenThreshold}" FontSize="13"/>
-      <Button Grid.Column="2" Grid.Row="2" Click="OpenGreenFiltered">
-        <Image Source="./Resources/Button/photo.png"/>
-      </Button>
+      <StackPanel Orientation="Vertical" Grid.Column="2" Grid.Row="2" VerticalAlignment="Stretch" Width="25">
+        <Button Click="OpenGreenFiltered" Margin="2">
+          <Image Source="./Resources/Button/photo.png"/>
+        </Button>
+        <Button x:Name="ButtonUndoGreen" Click="ButtonUndoGreen_Click" Margin="2">
+          <Image Source="./Resources/Button/undo.png"/>
+        </Button>
+        <Button x:Name="RedoGreenButton" Click="RedoGreenButton_Click" Margin="2">
+          <Image Source="./Resources/Button/redo.png"/>
+        </Button>
+        <Button Margin="2">
+          <Image Source="./Resources/Button/save.png"/>
+        </Button>
+      </StackPanel>
     </Grid>
   </Grid>
 </Window>
