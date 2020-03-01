@@ -11,8 +11,9 @@ namespace Greenhouse.Models
     public static string ThumbsPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Thumbs\";
     public static string FilteredPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Filtered\";
     public static string HistPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Hist\";
+    public static string SelectionPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Selection\";
 
-    public ImageFile Filename;
+    public readonly string Filename;
     public ImageFile Original;
     public ImageFile Thumb;
     public ImageFile FilteredGreen;
@@ -22,9 +23,11 @@ namespace Greenhouse.Models
     public ImageFile HistG;
     public ImageFile HistB;
 
+    public ImageFile Selection;
+
     public ImageManager(string file)
     {
-      Filename = new ImageFile(file);
+      Filename = file;
 
       Original = new ImageFile(ImagePath + file);
       Thumb = new ImageFile(ThumbsPath + file);
@@ -36,16 +39,18 @@ namespace Greenhouse.Models
       HistG = new ImageFile(HistPath + "g_" + file);
       HistB = new ImageFile(HistPath + "b_" + file);
 
+      Selection = new ImageFile(SelectionPath + file);
+
       Directory.CreateDirectory(BasePath);
       Directory.CreateDirectory(ImagePath);
       Directory.CreateDirectory(ThumbsPath);
       Directory.CreateDirectory(FilteredPath);
       Directory.CreateDirectory(HistPath);
+      Directory.CreateDirectory(SelectionPath);
     }
 
     public void Delete()
     {
-      Filename.Delete();
       Original.Delete();
       Thumb.Delete();
       FilteredGreen.Delete();
@@ -53,6 +58,7 @@ namespace Greenhouse.Models
       HistR.Delete();
       HistG.Delete();
       HistB.Delete();
+      Selection.Delete();
     }
   }
 }

@@ -4,14 +4,9 @@ using System.Drawing;
 
 namespace Greenhouse.Vision
 {
-
   public class Histogram
   {
-    public const int MAX = 256;
-
-    public int[] R = new int[MAX];
-    public int[] G = new int[MAX];
-    public int[] B = new int[MAX];
+    public RGBArray RGBArray;
 
     public Bitmap HistogramR;
     public Bitmap HistogramG;
@@ -19,11 +14,11 @@ namespace Greenhouse.Vision
 
     public Histogram Add(Histogram other)
     {
-      for (int i = 0; i < MAX; i++)
+      for (int i = 0; i < RGBArray.MAX; i++)
       {
-        R[i] += other.R[i];
-        G[i] += other.G[i];
-        B[i] += other.B[i];
+        RGBArray.R[i] += other.RGBArray.R[i];
+        RGBArray.G[i] += other.RGBArray.G[i];
+        RGBArray.B[i] += other.RGBArray.B[i];
       }
       return this;
     }
@@ -32,11 +27,11 @@ namespace Greenhouse.Vision
     {
       var max = new RGB();
 
-      for (int i = 0; i < MAX; i++)
+      for (int i = 0; i < RGBArray.MAX; i++)
       {
-        max.R = Math.Max(max.R, R[i]);
-        max.G = Math.Max(max.G, G[i]);
-        max.B = Math.Max(max.B, B[i]);
+        max.R = Math.Max(max.R, RGBArray.R[i]);
+        max.G = Math.Max(max.G, RGBArray.G[i]);
+        max.B = Math.Max(max.B, RGBArray.B[i]);
       }
 
       return max;
@@ -57,9 +52,9 @@ namespace Greenhouse.Vision
           Byte g = redBffer[offset + 1];
           Byte r = redBffer[offset + 2];
           // Byte a = buffer[offset + 3];
-          h.R[r]++;
-          h.G[g]++;
-          h.B[b]++;
+          h.RGBArray.R[r]++;
+          h.RGBArray.G[g]++;
+          h.RGBArray.B[b]++;
 
           var redRatio = ((r + eps) / ((Math.Max(g, b) + eps)));
           var greenRatio = ((g + eps) / ((Math.Max(r, b) + eps)));
@@ -67,14 +62,14 @@ namespace Greenhouse.Vision
           if (!(redRatio > thresholds.RedNormalized))
           {
             redBffer[offset] = (byte)255;
-            redBffer[offset + 1] = (byte)0;
-            redBffer[offset + 2] = (byte)0;
+            redBffer[offset + 1] = (byte)255;
+            redBffer[offset + 2] = (byte)255;
           }
           if (!(greenRatio > thresholds.GreenNormalized))
           {
             greenBuffer[offset] = (byte)255;
-            greenBuffer[offset + 1] = (byte)0;
-            greenBuffer[offset + 2] = (byte)0;
+            greenBuffer[offset + 1] = (byte)255;
+            greenBuffer[offset + 2] = (byte)255;
           }
         }
       }
@@ -91,11 +86,11 @@ namespace Greenhouse.Vision
       var maxAll = Math.Max(Math.Max(max.B, max.G), max.R);
       var colorBandHeight = 4;
 
-      for (int i = 0; i < Histogram.MAX; i++)
+      for (int i = 0; i < RGBArray.MAX; i++)
       {
-        int r = (int)(((double)filterResult.Histogram.R[i] / (double)(maxAll + 1)) * height);
-        int g = (int)(((double)filterResult.Histogram.G[i] / (double)(maxAll + 1)) * height);
-        int b = (int)(((double)filterResult.Histogram.B[i] / (double)(maxAll + 1)) * height);
+        int r = (int)(((double)filterResult.Histogram.RGBArray.R[i] / (double)(maxAll + 1)) * height);
+        int g = (int)(((double)filterResult.Histogram.RGBArray.G[i] / (double)(maxAll + 1)) * height);
+        int b = (int)(((double)filterResult.Histogram.RGBArray.B[i] / (double)(maxAll + 1)) * height);
 
         if (DrawPointHistogram)
         {
@@ -107,15 +102,15 @@ namespace Greenhouse.Vision
         {
           for (int yR = HistogramR.Height - r - 1; yR < HistogramR.Height - 1; yR++)
           {
-            HistogramR.SetPixel(i, yR, Color.FromArgb(125, 255, 0, 0));
+            HistogramR.SetPixel(i, yR, Color.FromArgb(255, 255, 0, 0));
           }
           for (int yG = HistogramG.Height - g - 1; yG < HistogramG.Height - 1; yG++)
           {
-            HistogramG.SetPixel(i, yG, Color.FromArgb(125, 0, 255, 0));
+            HistogramG.SetPixel(i, yG, Color.FromArgb(255, 0, 255, 0));
           }
           for (int yB = HistogramB.Height - b - 1; yB < HistogramB.Height - 1; yB++)
           {
-            HistogramB.SetPixel(i, yB, Color.FromArgb(125, 0, 0, 255));
+            HistogramB.SetPixel(i, yB, Color.FromArgb(255, 0, 0, 255));
           }
         }
 

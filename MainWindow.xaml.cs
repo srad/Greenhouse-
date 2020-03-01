@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace Greenhouse
 {
@@ -19,17 +20,20 @@ namespace Greenhouse
     private ImageProcessor ImageProcessor;
     private ImageManager CurrentFile;
     private readonly ImageListView ImageListView = new ImageListView();
-    private bool DrawPointHistogram = false;
     private bool PrimaryMouseDown = false;
     private int GridY = 40;
     private int GridX = 40;
     private bool ImageLoaded = false;
     private bool[,] GridSelection;
+    private int GridSizeX;
+    private int GridSizeY;
     private Stack<UIElement> RedoStack = new Stack<UIElement>();
+    private Size WindowStartSize;
 
     public MainWindow()
     {
       InitializeComponent();
+      WindowStartSize = new Size(ActualHeight, ActualWidth);
 
       var images = Directory.GetFiles(ImageManager.ThumbsPath, "*.jpg");
       foreach (var image in images)
@@ -85,12 +89,24 @@ namespace Greenhouse
       filterRed.Source = CurrentFile.FilteredRed.BitmapImage.Value;
       filterGreen.ImageSource = CurrentFile.FilteredGreen.BitmapImage.Value;
 
-      int sizeX = (int)(CurrentFile.FilteredGreen.BitmapImage.Value.Width /  GridX) + 1;
-      int sizeY = (int)(CurrentFile.FilteredGreen.BitmapImage.Value.Height / GridY) + 1;
-      GridSelection = new bool[sizeX, sizeY];
-      for (int x = 0; x < sizeX; x++)
+      var imageSize = GreenImageSize();
+      GridSizeX = (int)(imageSize.DisplayWidth / GridX);
+      GridSizeY = (int)(imageSize.DisplayedHeight / GridY);
+
+      // Is there some edge left at the right?
+      if ((imageSize.DisplayWidth % GridX) > 0)
       {
-        for (int y = 0; y < sizeY; y++)
+        GridSizeX += 1;
+      }
+      if ((imageSize.DisplayedHeight % GridY) > 0)
+      {
+        GridSizeY += 1;
+      }
+
+      GridSelection = new bool[GridSizeX, GridSizeY];
+      for (int x = 0; x < GridSizeX; x++)
+      {
+        for (int y = 0; y < GridSizeY; y++)
         {
           GridSelection[x, y] = false;
         }
@@ -146,9 +162,9 @@ namespace Greenhouse
       OpenFile(CurrentFile.FilteredRed.Path);
     }
 
-    public static void Rect(int x, int y, int width, int height, System.Windows.Controls.Canvas cv)
+    private static void Rect(GridPos pos, int width, int height, System.Windows.Controls.Canvas cv)
     {
-      if (x < 0 || y < 0)
+      if (pos.PixelX < 0 || pos.PixelY < 0)
       {
         return;
       }
@@ -158,31 +174,24 @@ namespace Greenhouse
         Width = width,
         Height = height,
         Stroke = b,
-        StrokeThickness = width/2
+        StrokeThickness = width / 2
       };
 
+      rect.Tag = pos;
       cv.Children.Add(rect);
 
-      rect.SetValue(System.Windows.Controls.Canvas.LeftProperty, (double)x);
-      rect.SetValue(System.Windows.Controls.Canvas.TopProperty, (double)y);
+      rect.SetValue(System.Windows.Controls.Canvas.LeftProperty, (double)pos.PixelX);
+      rect.SetValue(System.Windows.Controls.Canvas.TopProperty, (double)pos.PixelY);
     }
 
-    private class GridV2
+    private GridPos MouseGridPos(Point e)
     {
-      public int X;
-      public int Y;
-      public int GridX;
-      public int GridY;
-    }
-
-    private GridV2 MouseGridPos(Point e)
-    {
-      return new GridV2
+      return new GridPos
       {
-        X = (int)Math.Floor(e.X / GridX),
-        Y = (int)Math.Floor(e.Y / GridY),
-        GridX = (int)Math.Floor(e.X / GridX) * GridX,
-        GridY = (int)Math.Floor(e.Y / GridY) * GridY
+        GridX = (int)Math.Floor(e.X / GridX),
+        GridY = (int)Math.Floor(e.Y / GridY),
+        PixelX = (int)Math.Floor(e.X / GridX) * GridX,
+        PixelY = (int)Math.Floor(e.Y / GridY) * GridY
       };
     }
 
@@ -198,6 +207,7 @@ namespace Greenhouse
       {
         return;
       }
+
       if (!PrimaryMouseDown)
       {
         return;
@@ -205,14 +215,19 @@ namespace Greenhouse
       PrimaryMouseDown = true;
 
       var pos = MouseGridPos(e);
-      if (GridSelection[pos.X, pos.Y])
+      if (pos.GridX >= GridSizeX || pos.GridY >= GridSizeY)
       {
         return;
       }
-      GridSelection[pos.X, pos.Y] = true;
+
+      if (GridSelection[pos.GridX, pos.GridY])
+      {
+        return;
+      }
+      GridSelection[pos.GridX, pos.GridY] = true;
 
       Debug.WriteLine(pos);
-      Rect(pos.GridX, pos.GridY, GridX, GridY, canvasGreen);
+      Rect(pos, GridX, GridY, canvasGreen);
     }
 
     private void CanvasGreen_MouseMove(object sender, MouseEventArgs e)
@@ -237,10 +252,101 @@ namespace Greenhouse
 
     private void RedoGreenButton_Click(object sender, RoutedEventArgs e)
     {
-      if(RedoStack.Count > 0)
+      if (RedoStack.Count > 0)
       {
         canvasGreen.Children.Add(RedoStack.Pop());
       }
+    }
+
+    /// <summary>
+    /// Calculates the actual image in the cell (which can change size depending on the window size).
+    /// </summary>
+    /// <returns></returns>
+    private SizeInfo GreenImageSize()
+    {
+      var actualH = GridGreen.ActualHeight;
+      var h = CurrentFile.Original.BitmapImage.Value.Height;
+      var r = actualH / h;
+      var w2 = filterGreen.ImageSource.Width * r;
+
+      return new SizeInfo
+      {
+        DisplayedHeight = actualH,
+        DisplayWidth = w2,
+        Height = h,
+        Width = CurrentFile.Original.BitmapImage.Value.Width
+      };
+    }
+
+    private void ButtonClearSelection_Click(object sender, RoutedEventArgs e)
+    {
+      canvasGreen.Children.Clear();
+      for (int x = 0; x < GridSizeX; x++)
+      {
+        for (int y = 0; y < GridSizeY; y++)
+        {
+          GridSelection[x, y] = false;
+        }
+      }
+    }
+
+    private void ButtonSave_Click(object sender, RoutedEventArgs e)
+    {
+      /*
+      foreach (var child in canvasGreen.Children)
+      {
+        var shape = child as System.Windows.Shapes.Rectangle;
+        var pos = shape.Tag as GridPos;
+        Debug.WriteLine($"{pos}");
+      }
+      */
+      var size = GreenImageSize();
+      var ratioX = size.DisplayWidth / size.Width;
+      var ratioY = size.DisplayedHeight / size.Height;
+      var source = new System.Drawing.Bitmap(CurrentFile.FilteredGreen.Path);
+      var destination = new System.Drawing.Bitmap((int)source.Width, (int)source.Height);
+      var gridXScaled = GridSizeX * ratioX; 
+      var gridYScaled = GridSizeY * ratioY;
+
+      for (int x = 0; x < GridSizeX; x++)
+      {
+        for (int y = 0; y < GridSizeY; y++)
+        {
+          if (GridSelection[x, y])
+          {
+            var scaledX = x * gridXScaled;
+            var scaledY = y * gridYScaled;
+            var rect = new System.Drawing.Rectangle((int)scaledX, (int)scaledY, (int)gridXScaled, (int)gridYScaled);
+            CopyRegionIntoImage(source, rect, ref destination, rect);
+          }
+        }
+      }
+      var image = ImageSourceFromBitmap(destination);
+      destination.Save(CurrentFile.Selection.Path);
+      SelectedImageArea.Source = image;
+    }
+
+    public static void CopyRegionIntoImage(System.Drawing.Bitmap srcBitmap, System.Drawing.Rectangle srcRegion, ref System.Drawing.Bitmap destBitmap, System.Drawing.Rectangle destRegion)
+    {
+      using (System.Drawing.Graphics grD = System.Drawing.Graphics.FromImage(destBitmap))
+      {
+        grD.DrawImage(srcBitmap, destRegion, srcRegion, System.Drawing.GraphicsUnit.Pixel);
+      }
+    }
+
+    //If you get 'dllimport unknown'-, then add 'using System.Runtime.InteropServices;'
+    [System.Runtime.InteropServices.DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
+    [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+    public static extern bool DeleteObject([System.Runtime.InteropServices.In] IntPtr hObject);
+
+    public System.Windows.Media.ImageSource ImageSourceFromBitmap(System.Drawing.Bitmap bmp)
+    {
+      var handle = bmp.GetHbitmap();
+      try
+      {
+        return System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+      }
+      finally { DeleteObject(handle); }
     }
   }
 }

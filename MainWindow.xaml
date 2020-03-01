@@ -43,9 +43,6 @@
       </MenuItem>
     </Menu>
 
-    <Grid Grid.Row="2" Grid.Column="0" Margin="5,0,5,0">
-      <Label Content="Histograms" Background="AntiqueWhite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-    </Grid>
     <Grid Grid.Row="2" Grid.Column="1" Margin="0,0,0,0">
       <Label Content="Original Image" Background="AntiqueWhite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
     </Grid>
@@ -97,8 +94,27 @@
             <Image x:Name="imgHistR" Source="./Resources/leaf.png" Margin="0"/>
           </Border>
         </Grid>
+
+        <Grid Grid.Column="0" Grid.Row="2">
+          <Border BorderBrush="Gray" BorderThickness="1" Margin="2">
+            <Image x:Name="SelectedImageArea" Source="./Resources/leaf.png" Stretch="Uniform"/>
+          </Border>
+        </Grid>
+
+        <Grid Grid.Column="1" Grid.Row="2">
+          <Border BorderBrush="Gray" BorderThickness="1" Margin="2">
+            <Image x:Name="ImageRedGreen" Source="./Resources/leaf.png"/>
+          </Border>
+        </Grid>
+
+        <Grid Grid.Column="2" Grid.Row="2">
+          <Border BorderBrush="Gray" BorderThickness="1" Margin="2">
+            <Image x:Name="ImageGreenBlue" Source="./Resources/leaf.png"/>
+          </Border>
+        </Grid>
+
         <Grid Grid.Column="0" Grid.Row="1">
-          <Label Content="Histogram R" Margin="0" FontSize="15" FontWeight="Bold"  HorizontalAlignment="Center"/>
+          <Label Content="Histogram R" Margin="2,0" FontSize="15" FontWeight="Bold"  HorizontalAlignment="Center"/>
         </Grid>
         <Grid Grid.Column="1" Grid.Row="1">
           <Label Content="Histogram G" Margin="0" FontSize="15" FontWeight="Bold"  HorizontalAlignment="Center"/>
@@ -149,23 +165,23 @@
     <Grid Margin="0,5,0,0" Grid.Row="3" Grid.Column="1" Background="FloralWhite">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="40"/>
+        <ColumnDefinition Width="50"/>
+        <ColumnDefinition Width="30"/>
       </Grid.ColumnDefinitions>
       <Grid.RowDefinitions>
         <RowDefinition Height="*"/>
         <RowDefinition Height="30"/>
-        <RowDefinition Height="100"/>
       </Grid.RowDefinitions>
-      <Grid x:Name="GridGreen" Margin="5" Grid.Column="0" Grid.Row="0" Grid.RowSpan="3">
-        <Canvas Width="{Binding Width, ElementName=GridGreen}" Height="{Binding Height, ElementName=GridGreen}" x:Name="canvasGreen" MouseDown="CanvasGreen_MouseDown" MouseMove="CanvasGreen_MouseMove" MouseUp="CanvasGreen_MouseUp">
+      <Grid x:Name="GridGreen" Margin="0" Grid.Column="0" Grid.Row="0" Grid.RowSpan="3">
+        <Canvas Margin="0" Width="{Binding Width, ElementName=GridGreen}" Height="{Binding Height, ElementName=GridGreen}" x:Name="canvasGreen" MouseDown="CanvasGreen_MouseDown" MouseMove="CanvasGreen_MouseMove" MouseUp="CanvasGreen_MouseUp">
           <Canvas.Background>
             <ImageBrush Stretch="Uniform" AlignmentX="Left" AlignmentY="Top" x:Name="filterGreen" ImageSource="./Resources/leaf.png" />
           </Canvas.Background>
         </Canvas>
       </Grid>
-      <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" x:Name="GreenThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
-      <Label Grid.Row="1" Grid.Column="1" Content="{Binding Value, ElementName=GreenThreshold}" FontSize="13"/>
-      <StackPanel Orientation="Vertical" Grid.Column="2" Grid.Row="2" VerticalAlignment="Stretch" Width="25">
+      <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="2" x:Name="GreenThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
+      <Label Grid.Row="1" Grid.Column="2" Content="{Binding Value, ElementName=GreenThreshold}" FontSize="13"/>
+      <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Stretch" Width="35" Margin="0,10,0,10">
         <Button Click="OpenGreenFiltered" Margin="2">
           <Image Source="./Resources/Button/photo.png"/>
         </Button>
@@ -175,8 +191,11 @@
         <Button x:Name="RedoGreenButton" Click="RedoGreenButton_Click" Margin="2">
           <Image Source="./Resources/Button/redo.png"/>
         </Button>
-        <Button Margin="2">
+        <Button Margin="2" Name="ButtonSave" Click="ButtonSave_Click">
           <Image Source="./Resources/Button/save.png"/>
+        </Button>
+        <Button Margin="2" Name="ButtonClearSelection" Click="ButtonClearSelection_Click">
+          <Image Source="./Resources/Button/trash.png"/>
         </Button>
       </StackPanel>
     </Grid>

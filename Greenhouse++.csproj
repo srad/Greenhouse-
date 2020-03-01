@@ -57,16 +57,19 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </ApplicationDefinition>
+    <Compile Include="Models\GridPos.cs" />
     <Compile Include="Models\FilterResult.cs" />
     <Compile Include="Models\FilterThesholds.cs" />
     <Compile Include="Models\ImageFile.cs" />
     <Compile Include="Models\ImageManager.cs" />
+    <Compile Include="Models\SizeInfo.cs" />
     <Compile Include="ViewModels\ImageListViewItem.cs" />
     <Compile Include="ViewModels\ImageListView.cs" />
     <Compile Include="Vision\ImageHelper.cs" />
     <Compile Include="Vision\ImageProcessor.cs" />
     <Compile Include="Vision\Histogram.cs" />
     <Compile Include="Vision\RGB.cs" />
+    <Compile Include="Vision\RGBArray.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -119,18 +122,15 @@
     <Folder Include="Images\Thumbs\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Button\pin.png" />
     <Resource Include="Resources\Button\redo.png" />
     <Resource Include="Resources\Button\save.png" />
-    <Resource Include="Resources\Button\shapes.png" />
     <Resource Include="Resources\Button\undo.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Button\shape-green.png" />
-    <Resource Include="Resources\Button\shape-red.png" />
+    <Resource Include="Resources\Button\photo.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Button\photo.png" />
+    <Resource Include="Resources\Button\trash.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
