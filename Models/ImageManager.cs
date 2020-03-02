@@ -10,6 +10,7 @@ namespace Greenhouse.Models
     public static string ImagePath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Original\";
     public static string ThumbsPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Thumbs\";
     public static string FilteredPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Filtered\";
+    public static string SegmentedPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Segmented\";
     public static string HistPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Hist\";
     public static string SelectionPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Selection\";
 
@@ -22,6 +23,9 @@ namespace Greenhouse.Models
     public ImageFile HistR;
     public ImageFile HistG;
     public ImageFile HistB;
+
+    public ImageFile Leaf;
+    public ImageFile Earth;
 
     public ImageFile Selection;
 
@@ -41,12 +45,16 @@ namespace Greenhouse.Models
 
       Selection = new ImageFile(SelectionPath + file);
 
+      Earth = new ImageFile(SegmentedPath + "earth_" + file);
+      Leaf = new ImageFile(SegmentedPath + "leaf_" + file);
+
       Directory.CreateDirectory(BasePath);
       Directory.CreateDirectory(ImagePath);
       Directory.CreateDirectory(ThumbsPath);
       Directory.CreateDirectory(FilteredPath);
       Directory.CreateDirectory(HistPath);
       Directory.CreateDirectory(SelectionPath);
+      Directory.CreateDirectory(SegmentedPath);
     }
 
     public void Delete()
@@ -59,6 +67,8 @@ namespace Greenhouse.Models
       HistG.Delete();
       HistB.Delete();
       Selection.Delete();
+      Earth.Delete();
+      Leaf.Delete();
     }
   }
 }

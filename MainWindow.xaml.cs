@@ -88,6 +88,8 @@ namespace Greenhouse
 
       filterRed.Source = CurrentFile.FilteredRed.BitmapImage.Value;
       filterGreen.ImageSource = CurrentFile.FilteredGreen.BitmapImage.Value;
+      segmentedEarth.Source = CurrentFile.Earth.BitmapImage.Value;
+      segmentedLeaf.Source = CurrentFile.Leaf.BitmapImage.Value;
 
       var imageSize = GreenImageSize();
       GridSizeX = (int)(imageSize.DisplayWidth / GridX);

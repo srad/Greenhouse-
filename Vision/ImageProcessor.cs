@@ -33,6 +33,8 @@ namespace Greenhouse.Vision
       {
         filterResult.RedBitmap.Save(ImageFile.FilteredRed.Path, ImageFormat.Jpeg);
         filterResult.GreenBitmap.Save(ImageFile.FilteredGreen.Path, ImageFormat.Jpeg);
+        filterResult.LeafBitmap.Save(ImageFile.Leaf.Path, ImageFormat.Jpeg);
+        filterResult.EarthBitmap.Save(ImageFile.Earth.Path, ImageFormat.Jpeg);
         filterResult.Histogram.Draw(filterResult, false, 256, 200);
       }
       catch (Exception e)

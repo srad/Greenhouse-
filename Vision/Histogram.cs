@@ -6,7 +6,7 @@ namespace Greenhouse.Vision
 {
   public class Histogram
   {
-    public RGBArray RGBArray;
+    public RGBArray RGBArray = new RGBArray();
 
     public Bitmap HistogramR;
     public Bitmap HistogramG;
@@ -37,7 +37,7 @@ namespace Greenhouse.Vision
       return max;
     }
     
-    public static Histogram CreateHist(FilterThesholds thresholds, byte[] redBffer, byte[] greenBuffer, int x, int y, int endx, int endy, int width, int depth)
+    public static Histogram CreateHist(FilterThesholds thresholds, byte[] leafBuffer, byte[] earthBuffer, byte[] redBffer, byte[] greenBuffer, int x, int y, int endx, int endy, int width, int depth)
     {
       var h = new Histogram();
       var eps = 1;
@@ -61,15 +61,37 @@ namespace Greenhouse.Vision
           // Set other color only blue
           if (!(redRatio > thresholds.RedNormalized))
           {
-            redBffer[offset] = (byte)255;
-            redBffer[offset + 1] = (byte)255;
-            redBffer[offset + 2] = (byte)255;
+            redBffer[offset] = (byte)0;
+            redBffer[offset + 1] = (byte)0;
+            redBffer[offset + 2] = (byte)0;
+          }
+          else
+          {
+            leafBuffer[offset] = (byte)154;
+            leafBuffer[offset + 1] = (byte)1;
+            leafBuffer[offset + 2] = (byte)251;
+            redBffer[offset] = (byte)10;
+            redBffer[offset + 1] = (byte)69;
+            redBffer[offset + 2] = (byte)130;
           }
           if (!(greenRatio > thresholds.GreenNormalized))
           {
             greenBuffer[offset] = (byte)255;
             greenBuffer[offset + 1] = (byte)255;
             greenBuffer[offset + 2] = (byte)255;
+            earthBuffer[offset] = b;
+            earthBuffer[offset + 1] = g;
+            earthBuffer[offset + 2] = r;
+          }
+          else
+          {
+            earthBuffer[offset] = (byte)154;
+            earthBuffer[offset + 1] = (byte)1;
+            earthBuffer[offset + 2] = (byte)251;
+
+            greenBuffer[offset] = (byte)0;
+            greenBuffer[offset + 1] = (byte)255;
+            greenBuffer[offset + 2] = (byte)0;
           }
         }
       }

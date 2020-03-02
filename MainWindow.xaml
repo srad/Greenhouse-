@@ -144,7 +144,20 @@
         <RowDefinition Height="30"/>
         <RowDefinition Height="40"/>
       </Grid.RowDefinitions>
-      <Image x:Name="filterRed" Source="./Resources/leaf.png" Grid.Column="0" Grid.RowSpan="3"/>
+      <Grid Grid.Column="0" Grid.RowSpan="3">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <Image Grid.Column="0" Grid.Row="0"  x:Name="filterRed" Source="./Resources/leaf.png" Margin="5" />
+        <Image Grid.Column="1" Grid.Row="0"  x:Name="segmentedEarth" Source="./Resources/leaf.png" Margin="5" />
+        <Label Grid.Row="1" Grid.Column="0" Content="Clustered Non green-leaf" FontSize="13" HorizontalAlignment="Center"/>
+        <Label Grid.Row="1" Grid.Column="1" Content="Segmented non green-leaf" FontSize="13" HorizontalAlignment="Center"/>
+      </Grid>
       <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" x:Name="RedThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
       <Label Grid.Row="1" Grid.Column="1" Content="{Binding Value, ElementName=RedThreshold}" FontSize="13"/>
       <Button Grid.Column="2" Grid.Row="2" Click="OpenRedFiltered">
@@ -173,7 +186,19 @@
         <RowDefinition Height="30"/>
       </Grid.RowDefinitions>
       <Grid x:Name="GridGreen" Margin="0" Grid.Column="0" Grid.Row="0" Grid.RowSpan="3">
-        <Canvas Margin="0" Width="{Binding Width, ElementName=GridGreen}" Height="{Binding Height, ElementName=GridGreen}" x:Name="canvasGreen" MouseDown="CanvasGreen_MouseDown" MouseMove="CanvasGreen_MouseMove" MouseUp="CanvasGreen_MouseUp">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <Image Grid.Column="1" Grid.Row="0"  x:Name="segmentedLeaf" Source="./Resources/leaf.png" Margin="5" />
+        <Label Grid.Row="1" Grid.Column="0" Content="Clustered green-leaf" FontSize="13" HorizontalAlignment="Center"/>
+        <Label Grid.Row="1" Grid.Column="1" Content="Segmented green-leaf" FontSize="13" HorizontalAlignment="Center"/>
+
+        <Canvas Grid.Column="0" Grid.Row="0" Margin="0" Width="{Binding Width, ElementName=GridGreen}" Height="{Binding Height, ElementName=GridGreen}" x:Name="canvasGreen" MouseDown="CanvasGreen_MouseDown" MouseMove="CanvasGreen_MouseMove" MouseUp="CanvasGreen_MouseUp">
           <Canvas.Background>
             <ImageBrush Stretch="Uniform" AlignmentX="Left" AlignmentY="Top" x:Name="filterGreen" ImageSource="./Resources/leaf.png" />
           </Canvas.Background>
