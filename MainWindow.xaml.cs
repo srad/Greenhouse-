@@ -35,10 +35,13 @@ namespace Greenhouse
       InitializeComponent();
       WindowStartSize = new Size(ActualHeight, ActualWidth);
 
-      var images = Directory.GetFiles(ImageManager.ThumbsPath, "*.jpg");
-      foreach (var image in images)
+      if (Directory.Exists(ImageManager.BasePath))
       {
-        ImageListView.AddImage(image);
+        var images = Directory.GetFiles(ImageManager.ThumbsPath, "*.jpg");
+        foreach (var image in images)
+        {
+          ImageListView.AddImage(image);
+        }
       }
 
       TvBox.ItemsSource = ImageListView;
@@ -56,9 +59,9 @@ namespace Greenhouse
         // Copy file to project
         var filePath = openFileDialog.FileName;
         var randomFilename = Guid.NewGuid() + Path.GetExtension(filePath);
+        CurrentFile = new ImageManager(randomFilename);
         var targetFile = ImageManager.ImagePath + randomFilename;
         File.Copy(filePath, targetFile);
-        CurrentFile = new ImageManager(randomFilename);
 
         // Create Thumb
         var thumb = ImageHelper.Resize(CurrentFile.Original.Path, 300, 200);
