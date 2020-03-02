@@ -36,8 +36,24 @@ namespace Greenhouse.Vision
 
       return max;
     }
+
+    public static class BitmapIndex { public const int Leaf = 2, Earth = 3, Red = 0, Green = 1; }
     
-    public static Histogram CreateHist(FilterThesholds thresholds, byte[] leafBuffer, byte[] earthBuffer, byte[] redBffer, byte[] greenBuffer, int x, int y, int endx, int endy, int width, int depth)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="thresholds"></param>
+    /// <param name="leafBuffer">
+    ///   Buffer order leafs, earth, red, green
+    /// </param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="endx"></param>
+    /// <param name="endy"></param>
+    /// <param name="width"></param>
+    /// <param name="depth"></param>
+    /// <returns></returns>
+    public static Histogram CreateHist(FilterThesholds thresholds, byte[][] buffers, int x, int y, int endx, int endy, int width, int depth)
     {
       var h = new Histogram();
       var eps = 1;
@@ -48,9 +64,9 @@ namespace Greenhouse.Vision
         {
           //System.Threading.Interlocked.Increment(ref progress);
           var offset = ((j * width) + i) * depth;
-          Byte b = redBffer[offset];
-          Byte g = redBffer[offset + 1];
-          Byte r = redBffer[offset + 2];
+          Byte b = buffers[BitmapIndex.Red][offset];
+          Byte g = buffers[BitmapIndex.Red][offset + 1];
+          Byte r = buffers[BitmapIndex.Red][offset + 2];
           // Byte a = buffer[offset + 3];
           h.RGBArray.R[r]++;
           h.RGBArray.G[g]++;
@@ -61,37 +77,39 @@ namespace Greenhouse.Vision
           // Set other color only blue
           if (!(redRatio > thresholds.RedNormalized))
           {
-            redBffer[offset] = (byte)0;
-            redBffer[offset + 1] = (byte)0;
-            redBffer[offset + 2] = (byte)0;
+            buffers[BitmapIndex.Red][offset] = (byte)0;
+            buffers[BitmapIndex.Red][offset + 1] = (byte)0;
+            buffers[BitmapIndex.Red][offset + 2] = (byte)0;
           }
           else
           {
-            leafBuffer[offset] = (byte)154;
-            leafBuffer[offset + 1] = (byte)1;
-            leafBuffer[offset + 2] = (byte)251;
-            redBffer[offset] = (byte)10;
-            redBffer[offset + 1] = (byte)69;
-            redBffer[offset + 2] = (byte)130;
+            buffers[BitmapIndex.Leaf][offset] = (byte)154;
+            buffers[BitmapIndex.Leaf][offset + 1] = (byte)1;
+            buffers[BitmapIndex.Leaf][offset + 2] = (byte)251;
+
+            buffers[BitmapIndex.Red][offset] = (byte)10;
+            buffers[BitmapIndex.Red][offset + 1] = (byte)69;
+            buffers[BitmapIndex.Red][offset + 2] = (byte)130;
           }
           if (!(greenRatio > thresholds.GreenNormalized))
           {
-            greenBuffer[offset] = (byte)255;
-            greenBuffer[offset + 1] = (byte)255;
-            greenBuffer[offset + 2] = (byte)255;
-            earthBuffer[offset] = b;
-            earthBuffer[offset + 1] = g;
-            earthBuffer[offset + 2] = r;
+            buffers[BitmapIndex.Green][offset] = (byte)255;
+            buffers[BitmapIndex.Green][offset + 1] = (byte)255;
+            buffers[BitmapIndex.Green][offset + 2] = (byte)255;
+
+            buffers[BitmapIndex.Earth][offset] = b;
+            buffers[BitmapIndex.Earth][offset + 1] = g;
+            buffers[BitmapIndex.Earth][offset + 2] = r;
           }
           else
           {
-            earthBuffer[offset] = (byte)154;
-            earthBuffer[offset + 1] = (byte)1;
-            earthBuffer[offset + 2] = (byte)251;
+            buffers[BitmapIndex.Earth][offset] = (byte)154;
+            buffers[BitmapIndex.Earth][offset + 1] = (byte)1;
+            buffers[BitmapIndex.Earth][offset + 2] = (byte)251;
 
-            greenBuffer[offset] = (byte)0;
-            greenBuffer[offset + 1] = (byte)255;
-            greenBuffer[offset + 2] = (byte)0;
+            buffers[BitmapIndex.Green][offset] = (byte)0;
+            buffers[BitmapIndex.Green][offset + 1] = (byte)255;
+            buffers[BitmapIndex.Green][offset + 2] = (byte)0;
           }
         }
       }

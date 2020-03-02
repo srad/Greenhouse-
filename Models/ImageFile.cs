@@ -30,43 +30,44 @@ namespace Greenhouse.Models
 
     public FilterResult Filter(FilterThesholds thresholds)
     {
-      var redBitmap = new Bitmap(Path);
-      var greenBitmap = new Bitmap(Path);
-      var leafBitmap = new Bitmap(Path);
-      var earthBitmap = new Bitmap(Path);
-
-      var rect = new Rectangle(0, 0, redBitmap.Width, redBitmap.Height);
-      var redData = redBitmap.LockBits(rect, ImageLockMode.ReadWrite, redBitmap.PixelFormat);
-      var greenData = greenBitmap.LockBits(rect, ImageLockMode.ReadWrite, greenBitmap.PixelFormat);
-      var leafData = leafBitmap.LockBits(rect, ImageLockMode.ReadWrite, leafBitmap.PixelFormat);
-      var earthData = earthBitmap.LockBits(rect, ImageLockMode.ReadWrite, earthBitmap.PixelFormat);
-
-      var depth = Bitmap.GetPixelFormatSize(redData.PixelFormat) / 8;
-
-      var redBuffer = new byte[redData.Width * redData.Height * depth];
-      var greenBuffer = new byte[greenData.Width * greenData.Height * depth];
-      var leafBuffer = new byte[leafData.Width * leafData.Height * depth];
-      var earthBuffer = new byte[earthData.Width * earthData.Height * depth];
-      var maxProgress = redData.Width * redData.Height;
-
-      //copy pixels to buffer
-      Marshal.Copy(redData.Scan0, redBuffer, 0, redBuffer.Length);
-      Marshal.Copy(greenData.Scan0, greenBuffer, 0, greenBuffer.Length);
-      Marshal.Copy(leafData.Scan0, leafBuffer, 0, leafBuffer.Length);
-      Marshal.Copy(earthData.Scan0, earthBuffer, 0, earthBuffer.Length);
-
-      var w = redData.Width;
-      var h = redData.Height;
       var results = new List<Histogram>();
+      var count = 4;
+      var bitmaps = new Bitmap[count];
+      var bitmapData = new BitmapData[count];
+      var buffers = new byte[count][];
+
+      for(int i=0; i < count; i++)
+      {
+        bitmaps[i] = new Bitmap(Path);
+      }
+
+      var h = bitmaps[0].Height;
+      var w = bitmaps[0].Width;
+      var rect = new Rectangle(0, 0, w, h);
+
+      for(int i=0; i < count; i++)
+      {
+        bitmapData[i] = bitmaps[i].LockBits(rect, ImageLockMode.ReadWrite, bitmaps[i].PixelFormat);
+      }
+
+      for (int i = 0; i < count; i++)
+      {
+        var bitMapDepth = Bitmap.GetPixelFormatSize(bitmapData[i].PixelFormat) / 8;
+        buffers[i] = new byte[bitmapData[i].Width * bitmapData[i].Height * bitMapDepth];
+        // Copy pixels to buffer
+        Marshal.Copy(bitmapData[i].Scan0, buffers[i], 0, buffers[i].Length);
+      }
+
+      var depth = Bitmap.GetPixelFormatSize(bitmapData[0].PixelFormat) / 8;
 
       try
       {
         // Run on 4 threads
         Parallel.Invoke(
-          () => results.Add(Histogram.CreateHist(thresholds, leafBuffer, earthBuffer, redBuffer, greenBuffer, 0, 0, w / 2, h / 2, w, depth)),
-          () => results.Add(Histogram.CreateHist(thresholds, leafBuffer, earthBuffer, redBuffer, greenBuffer, w / 2, 0, w, h / 2, w, depth)),
-          () => results.Add(Histogram.CreateHist(thresholds, leafBuffer, earthBuffer, redBuffer, greenBuffer, 0, h / 2, w / 2, h, w, depth)),
-          () => results.Add(Histogram.CreateHist(thresholds, leafBuffer, earthBuffer, redBuffer, greenBuffer, w / 2, h / 2, w, h, w, depth))
+          () => results.Add(Histogram.CreateHist(thresholds, buffers, 0, 0, w / 2, h / 2, w, depth)),
+          () => results.Add(Histogram.CreateHist(thresholds, buffers, w / 2, 0, w, h / 2, w, depth)),
+          () => results.Add(Histogram.CreateHist(thresholds, buffers, 0, h / 2, w / 2, h, w, depth)),
+          () => results.Add(Histogram.CreateHist(thresholds, buffers, w / 2, h / 2, w, h, w, depth))
         );
         // These lines can generate an arbritrary number of threads but they raise random exceptions
         // var threads = Environment.ProcessorCount;
@@ -79,24 +80,21 @@ namespace Greenhouse.Models
       {
         System.Windows.MessageBox.Show("Error :" + e.Message);
       }
-      // Copy the buffer back to image
-      Marshal.Copy(redBuffer, 0, redData.Scan0, redBuffer.Length);
-      Marshal.Copy(greenBuffer, 0, greenData.Scan0, greenBuffer.Length);
-      Marshal.Copy(leafBuffer, 0, leafData.Scan0, leafBuffer.Length);
-      Marshal.Copy(earthBuffer, 0, earthData.Scan0, earthBuffer.Length);
 
-      redBitmap.UnlockBits(redData);
-      greenBitmap.UnlockBits(greenData);
-      leafBitmap.UnlockBits(leafData);
-      earthBitmap.UnlockBits(earthData);
+      for (int i = 0; i < count; i++)
+      {
+        // Copy the buffer back to image
+        Marshal.Copy(buffers[i], 0, bitmapData[i].Scan0, buffers[i].Length);
+        bitmaps[i].UnlockBits(bitmapData[i]);
+      }
 
       return new FilterResult
       {
         Histogram = results.Aggregate(new Histogram(), (a, b) => a.Add(b)),
-        RedBitmap = redBitmap,
-        GreenBitmap = greenBitmap,
-        LeafBitmap = leafBitmap,
-        EarthBitmap = earthBitmap
+        RedBitmap = bitmaps[0],
+        GreenBitmap = bitmaps[1],
+        LeafBitmap = bitmaps[2],
+        EarthBitmap = bitmaps[3]
       };
     }
   }

@@ -8,13 +8,10 @@ namespace Greenhouse.Vision
   public class ImageProcessor
   {
     private readonly ImageManager ImageFile;
-    private readonly Action<int> progressCallback;
-    private static int progress = 0;
 
-    public ImageProcessor(ImageManager imagefile, Action<int> progressCallback)
+    public ImageProcessor(ImageManager imagefile)
     {
       this.ImageFile = imagefile;
-      this.progressCallback = progressCallback;
     }
 
     /// <summary>
@@ -26,7 +23,6 @@ namespace Greenhouse.Vision
     /// <returns></returns>
     public Histogram Start(FilterThesholds thresholds)
     {
-      progress = 0;
       var filterResult = ImageFile.Original.Filter(thresholds);
 
       try

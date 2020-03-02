@@ -72,11 +72,30 @@ namespace Greenhouse
       }
     }
 
+    [System.Runtime.InteropServices.DllImport("Shlwapi.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+    public static extern long StrFormatByteSize(
+        long fileSize
+        , [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPTStr)] System.Text.StringBuilder buffer
+        , int bufferSize);
+
+
+    /// <summary>
+    /// Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size.
+    /// </summary>
+    /// <param name="filelength">The numeric value to be converted.</param>
+    /// <returns>the converted string</returns>
+    public static string StrFormatByteSize(long filesize)
+    {
+      var sb = new System.Text.StringBuilder(11);
+      StrFormatByteSize(filesize, sb, sb.Capacity);
+      return sb.ToString();
+    }
+
     private void ProcessFile()
     {
       canvasGreen.Children.Clear();
       imgInput.Source = CurrentFile.Original.BitmapImage.Value;
-      ImageProcessor = new ImageProcessor(CurrentFile, (progress) => { });
+      ImageProcessor = new ImageProcessor(CurrentFile);
 
       // Color distribution of the original image
       var histogram = ImageProcessor.Start(new FilterThesholds(green: GreenThreshold.Value, red: RedThreshold.Value));
@@ -97,6 +116,8 @@ namespace Greenhouse
       var imageSize = GreenImageSize();
       GridSizeX = (int)(imageSize.DisplayWidth / GridX);
       GridSizeY = (int)(imageSize.DisplayedHeight / GridY);
+
+      OriginalImageLabel.Content = $"Original Image: {(int)CurrentFile.Original.BitmapImage.Value.Width}x{(int)CurrentFile.Original.BitmapImage.Value.Height} ({StrFormatByteSize(new FileInfo(CurrentFile.Original.Path).Length)})";
 
       // Is there some edge left at the right?
       if ((imageSize.DisplayWidth % GridX) > 0)

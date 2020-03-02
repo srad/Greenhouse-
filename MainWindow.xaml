@@ -21,9 +21,12 @@
     <Style TargetType="Image">
     </Style>
   </Window.Resources>
+  <Window.InputBindings>
+    <KeyBinding Key="O" Modifiers="Control" Command="Open"/>
+  </Window.InputBindings>
   <Grid>
     <Grid.RowDefinitions>
-      <RowDefinition Height="29"/>
+      <RowDefinition Height="20"/>
       <RowDefinition Height="*"/>
       <RowDefinition Height="35"/>
       <RowDefinition Height="*"/>
@@ -35,16 +38,18 @@
       <ColumnDefinition Width="194"/>
     </Grid.ColumnDefinitions>
 
-    <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" FontSize="16">
+    <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
       <MenuItem Header="File">
         <MenuItem Header="Open Image" Click="btnOpenFile_Click"/>
         <MenuItem Header="Open Folder" Click="BtnOpenFolder_Click"/>
         <MenuItem Header="Quit" Command="ApplicationCommands.Close"/>
       </MenuItem>
+      <MenuItem Header="About">
+      </MenuItem>
     </Menu>
 
     <Grid Grid.Row="2" Grid.Column="1" Margin="0,0,0,0">
-      <Label Content="Original Image" Background="AntiqueWhite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+      <Label x:Name="OriginalImageLabel" Content="Original Image" Background="AntiqueWhite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
     </Grid>
     <Grid Grid.Row="4" Grid.Column="1" Margin="0,0,0,5">
       <Label Content="Green Theshold" Background="GreenYellow" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
