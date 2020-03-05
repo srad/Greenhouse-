@@ -6,8 +6,8 @@ namespace Greenhouse.Models
   {
     public readonly double Red;
     public readonly double Green;
-    public readonly double RedNormalized;
-    public readonly double GreenNormalized;
+    public readonly double RedMinRatio;
+    public readonly double GreenMinRatio;
 
     public FilterThesholds(double red, double green)
     {
@@ -17,8 +17,8 @@ namespace Greenhouse.Models
       }
       this.Red = red;
       this.Green = green;
-      this.RedNormalized = Red / 100;
-      this.GreenNormalized = Green / 100;
+      this.RedMinRatio = Red / 100;
+      this.GreenMinRatio = Green / 100;
     }
   }
 }

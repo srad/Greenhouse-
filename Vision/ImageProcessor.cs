@@ -27,10 +27,10 @@ namespace Greenhouse.Vision
 
       try
       {
-        filterResult.RedBitmap.Save(ImageFile.FilteredRed.Path, ImageFormat.Jpeg);
-        filterResult.GreenBitmap.Save(ImageFile.FilteredGreen.Path, ImageFormat.Jpeg);
-        filterResult.LeafBitmap.Save(ImageFile.Leaf.Path, ImageFormat.Jpeg);
-        filterResult.EarthBitmap.Save(ImageFile.Earth.Path, ImageFormat.Jpeg);
+        filterResult.RedBitmap.Save(ImageFile.FilteredRed.Path, ImageFormat.Png);
+        filterResult.GreenBitmap.Save(ImageFile.FilteredGreen.Path, ImageFormat.Png);
+        filterResult.LeafBitmap.Save(ImageFile.Leaf.Path, ImageFormat.Png);
+        filterResult.EarthBitmap.Save(ImageFile.Earth.Path, ImageFormat.Png);
         filterResult.Histogram.Draw(filterResult, false, 256, 200);
       }
       catch (Exception e)

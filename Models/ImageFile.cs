@@ -16,6 +16,8 @@ namespace Greenhouse.Models
   {
     public string Path;
     public Lazy<BitmapImage> BitmapImage;
+    private readonly RGB Transparent = new RGB { R=251, G=1, B=154 };
+    public static class BitmapIndex { public const int Leaf = 2, Earth = 3, Red = 0, Green = 1; }
 
     public ImageFile(string path)
     {
@@ -38,7 +40,9 @@ namespace Greenhouse.Models
 
       for(int i=0; i < count; i++)
       {
-        bitmaps[i] = new Bitmap(Path);
+        // Copy to a transparent bitmap
+        var bmp =new Bitmap(Path);
+        bitmaps[i] = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format32bppRgb);
       }
 
       var h = bitmaps[0].Height;
@@ -62,19 +66,9 @@ namespace Greenhouse.Models
 
       try
       {
-        // Run on 4 threads
-        Parallel.Invoke(
-          () => results.Add(Histogram.CreateHist(thresholds, buffers, 0, 0, w / 2, h / 2, w, depth)),
-          () => results.Add(Histogram.CreateHist(thresholds, buffers, w / 2, 0, w, h / 2, w, depth)),
-          () => results.Add(Histogram.CreateHist(thresholds, buffers, 0, h / 2, w / 2, h, w, depth)),
-          () => results.Add(Histogram.CreateHist(thresholds, buffers, w / 2, h / 2, w, h, w, depth))
-        );
-        // These lines can generate an arbritrary number of threads but they raise random exceptions
-        // var threads = Environment.ProcessorCount;
-        // var actions = new List<Action>();
-        // var chunks = h / threads;
-        // Parallel.For(0, threads, i => actions.Add(() => results.Add(CreateHist(buffer, 0, i * chunks, w, i * chunks + chunks, w, depth))));
-        // Parallel.Invoke(actions.ToArray());
+        var threads = Environment.ProcessorCount;
+        double chunks = (double)h / threads;
+        Parallel.For(0, threads, i => results.Add(Process(Transparent, thresholds, buffers, 0, (int)(i*chunks), w, (int)((i+1)*chunks), w, depth)));
       }
       catch (Exception e)
       {
@@ -86,6 +80,7 @@ namespace Greenhouse.Models
         // Copy the buffer back to image
         Marshal.Copy(buffers[i], 0, bitmapData[i].Scan0, buffers[i].Length);
         bitmaps[i].UnlockBits(bitmapData[i]);
+        bitmaps[i].MakeTransparent(Color.FromArgb(Transparent.R, Transparent.G, Transparent.B));
       }
 
       return new FilterResult
@@ -96,6 +91,73 @@ namespace Greenhouse.Models
         LeafBitmap = bitmaps[2],
         EarthBitmap = bitmaps[3]
       };
+    }
+
+    private static Histogram Process(RGB transparentColor, FilterThesholds thresholds, byte[][] buffers, int x, int y, int endx, int endy, int width, int depth)
+    {
+      var h = new Histogram();
+      var eps = 1;
+
+      for (int i = x; i < endx; i++)
+      {
+        for (int j = y; j < endy; j++)
+        {
+          var offset = ((j * width) + i) * depth;
+
+          Byte b = buffers[BitmapIndex.Red][offset];
+          Byte g = buffers[BitmapIndex.Red][offset + 1];
+          Byte r = buffers[BitmapIndex.Red][offset + 2];
+          // Byte a = buffer[offset + 3];
+
+          h.RGBArray.R[r]++;
+          h.RGBArray.G[g]++;
+          h.RGBArray.B[b]++;
+
+          var redRatio = ((r + eps) / ((Math.Max(g, b) + eps)));
+          var greenRatio = ((g + eps) / ((Math.Max(r, b) + eps)));
+          var redDominant = redRatio > thresholds.RedMinRatio;
+          var greenDominant = greenRatio > thresholds.GreenMinRatio;
+
+          // Set other color only blue
+          if (!redDominant)
+          {
+            buffers[BitmapIndex.Red][offset] = (byte)transparentColor.B;
+            buffers[BitmapIndex.Red][offset + 1] = (byte)transparentColor.G;
+            buffers[BitmapIndex.Red][offset + 2] = (byte)transparentColor.R;
+          }
+          else // Red is dominant
+          {
+            buffers[BitmapIndex.Leaf][offset] = (byte)transparentColor.B;
+            buffers[BitmapIndex.Leaf][offset + 1] = (byte)transparentColor.G;
+            buffers[BitmapIndex.Leaf][offset + 2] = (byte)transparentColor.R;
+
+            buffers[BitmapIndex.Red][offset] = (byte)10;
+            buffers[BitmapIndex.Red][offset + 1] = (byte)69;
+            buffers[BitmapIndex.Red][offset + 2] = (byte)130;
+          }
+          if (!greenDominant)
+          {
+            buffers[BitmapIndex.Green][offset] = (byte)transparentColor.B;
+            buffers[BitmapIndex.Green][offset + 1] = (byte)transparentColor.G;
+            buffers[BitmapIndex.Green][offset + 2] = (byte)transparentColor.R;
+
+            buffers[BitmapIndex.Earth][offset] = b;
+            buffers[BitmapIndex.Earth][offset + 1] = g;
+            buffers[BitmapIndex.Earth][offset + 2] = r;
+          }
+          else // Green is dominant
+          {
+            buffers[BitmapIndex.Earth][offset] = (byte)transparentColor.B;
+            buffers[BitmapIndex.Earth][offset + 1] = (byte)transparentColor.G;
+            buffers[BitmapIndex.Earth][offset + 2] = (byte)transparentColor.R;
+
+            buffers[BitmapIndex.Green][offset] = (byte)0;
+            buffers[BitmapIndex.Green][offset + 1] = (byte)255;
+            buffers[BitmapIndex.Green][offset + 2] = (byte)0;
+          }
+        }
+      }
+      return h;
     }
   }
 }

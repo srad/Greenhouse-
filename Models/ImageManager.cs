@@ -36,17 +36,17 @@ namespace Greenhouse.Models
       Original = new ImageFile(ImagePath + file);
       Thumb = new ImageFile(ThumbsPath + file);
 
-      FilteredGreen = new ImageFile(FilteredPath + "green_" + file);
-      FilteredRed = new ImageFile(FilteredPath + "red_" + file);
-
       HistR = new ImageFile(HistPath + "r_" + file);
       HistG = new ImageFile(HistPath + "g_" + file);
       HistB = new ImageFile(HistPath + "b_" + file);
 
       Selection = new ImageFile(SelectionPath + file);
 
-      Earth = new ImageFile(SegmentedPath + "earth_" + file);
-      Leaf = new ImageFile(SegmentedPath + "leaf_" + file);
+      var pngFilename = Path.GetFileNameWithoutExtension(file) + ".png";
+      FilteredGreen = new ImageFile(FilteredPath + "green_" + pngFilename);
+      FilteredRed = new ImageFile(FilteredPath + "red_" + pngFilename);
+      Earth = new ImageFile(SegmentedPath + "earth_" + pngFilename);
+      Leaf = new ImageFile(SegmentedPath + "leaf_" + pngFilename);
 
       Directory.CreateDirectory(BasePath);
       Directory.CreateDirectory(ImagePath);
