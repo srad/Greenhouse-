@@ -13,6 +13,7 @@ namespace Greenhouse.Models
     public static string SegmentedPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Segmented\";
     public static string HistPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Hist\";
     public static string SelectionPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Selection\";
+    public static string KernelPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Kernels\";
 
     public readonly string Filename;
     public ImageFile Original;
@@ -26,6 +27,7 @@ namespace Greenhouse.Models
 
     public ImageFile Leaf;
     public ImageFile Earth;
+    public ImageFile Edge;
 
     public ImageFile Selection;
 
@@ -48,6 +50,8 @@ namespace Greenhouse.Models
       Earth = new ImageFile(SegmentedPath + "earth_" + pngFilename);
       Leaf = new ImageFile(SegmentedPath + "leaf_" + pngFilename);
 
+      Edge = new ImageFile(KernelPath + "edge_" + pngFilename);
+
       Directory.CreateDirectory(BasePath);
       Directory.CreateDirectory(ImagePath);
       Directory.CreateDirectory(ThumbsPath);
@@ -55,6 +59,7 @@ namespace Greenhouse.Models
       Directory.CreateDirectory(HistPath);
       Directory.CreateDirectory(SelectionPath);
       Directory.CreateDirectory(SegmentedPath);
+      Directory.CreateDirectory(KernelPath);
     }
 
     public void Delete()
@@ -69,6 +74,7 @@ namespace Greenhouse.Models
       Selection.Delete();
       Earth.Delete();
       Leaf.Delete();
+      Edge.Delete();
     }
   }
 }

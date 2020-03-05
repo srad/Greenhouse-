@@ -108,7 +108,7 @@
 
         <Grid Grid.Column="1" Grid.Row="2">
           <Border BorderBrush="Gray" BorderThickness="1" Margin="2">
-            <Image x:Name="ImageRedGreen" Source="./Resources/leaf.png"/>
+            <Image x:Name="ImageEdge" Source="./Resources/leaf.png"/>
           </Border>
         </Grid>
 

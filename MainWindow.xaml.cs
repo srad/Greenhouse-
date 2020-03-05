@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -37,7 +38,8 @@ namespace Greenhouse
 
       if (Directory.Exists(ImageManager.BasePath))
       {
-        var images = Directory.GetFiles(ImageManager.ThumbsPath, "*.jpg");
+        var images = Directory.EnumerateFiles(ImageManager.ThumbsPath, "*.*", SearchOption.TopDirectoryOnly)
+            .Where(s => s.EndsWith(".jpg") || s.EndsWith(".png"));
         foreach (var image in images)
         {
           ImageListView.AddImage(image);
@@ -98,11 +100,7 @@ namespace Greenhouse
       ImageProcessor = new ImageProcessor(CurrentFile);
 
       // Color distribution of the original image
-      var histogram = ImageProcessor.Start(new FilterThesholds(green: GreenThreshold.Value, red: RedThreshold.Value));
-
-      histogram.HistogramR.Save(CurrentFile.HistR.Path);
-      histogram.HistogramG.Save(CurrentFile.HistG.Path);
-      histogram.HistogramB.Save(CurrentFile.HistB.Path);
+      var filterResult = ImageProcessor.Start(new FilterThesholds(green: GreenThreshold.Value, red: RedThreshold.Value));
 
       imgHistR.Source = CurrentFile.HistR.BitmapImage.Value;
       imgHistG.Source = CurrentFile.HistG.BitmapImage.Value;
@@ -112,6 +110,8 @@ namespace Greenhouse
       filterGreen.ImageSource = CurrentFile.FilteredGreen.BitmapImage.Value;
       segmentedEarth.Source = CurrentFile.Earth.BitmapImage.Value;
       segmentedLeaf.Source = CurrentFile.Leaf.BitmapImage.Value;
+
+      ImageEdge.Source = CurrentFile.Edge.BitmapImage.Value;
 
       var imageSize = GreenImageSize();
       GridSizeX = (int)(imageSize.DisplayWidth / GridX);

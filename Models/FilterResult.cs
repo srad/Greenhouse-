@@ -9,6 +9,7 @@ namespace Greenhouse.Models
     public Bitmap GreenBitmap;
     public Bitmap LeafBitmap;
     public Bitmap EarthBitmap;
+    public Bitmap EdgeBitmap;
     public Histogram Histogram;
     public Histogram LeafHistogram;
     public Histogram EarthHistogram;

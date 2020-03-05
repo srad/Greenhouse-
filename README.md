@@ -6,4 +6,4 @@ One very small step during that journey was image processing to gather real worl
 
 As part of the computational pipeline this C# WPF client does firstly image segmentation and create from these information the covered leaf area of a plant per ground unit. Secondly, it gathers each segment's color distributions. This distributions can then be used either for simulation to generate realistic models or to increase the system's robustness.
 
-![](https://raw.githubusercontent.com/srad/GreenhousePP/master/Docs/Images/ui0.png)
+![](https://raw.githubusercontent.com/srad/GreenhousePP/master/Docs/Images/ui1.jpg)

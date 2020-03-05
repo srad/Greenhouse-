@@ -21,7 +21,7 @@ namespace Greenhouse.Vision
     ///   2. Creates a new image with filtered red colors
     /// </summary>
     /// <returns></returns>
-    public Histogram Start(FilterThesholds thresholds)
+    public FilterResult Start(FilterThesholds thresholds)
     {
       var filterResult = ImageFile.Original.Filter(thresholds);
 
@@ -31,14 +31,18 @@ namespace Greenhouse.Vision
         filterResult.GreenBitmap.Save(ImageFile.FilteredGreen.Path, ImageFormat.Png);
         filterResult.LeafBitmap.Save(ImageFile.Leaf.Path, ImageFormat.Png);
         filterResult.EarthBitmap.Save(ImageFile.Earth.Path, ImageFormat.Png);
+        filterResult.EdgeBitmap.Save(ImageFile.Edge.Path, ImageFormat.Png);
         filterResult.Histogram.Draw(filterResult, false, 256, 200);
+        filterResult.Histogram.HistogramR.Save(ImageFile.HistR.Path);
+        filterResult.Histogram.HistogramG.Save(ImageFile.HistG.Path);
+        filterResult.Histogram.HistogramB.Save(ImageFile.HistB.Path);
       }
       catch (Exception e)
       {
         System.Windows.MessageBox.Show("Error :" + e.Message);
       }
 
-      return filterResult.Histogram;
+      return filterResult;
     }
   }
 }
