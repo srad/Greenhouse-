@@ -17,23 +17,39 @@ namespace Greenhouse.Vision
   {
     public static BitmapImage Resize(string path, int width, int height)
     {
-      BitmapImage source = new BitmapImage();
+      float originalHeight = 0, originalWidth = 0;
+      using (FileStream file = new FileStream(path, FileMode.Open, FileAccess.Read))
+      {
+        using (Image tif = Image.FromStream(stream: file, useEmbeddedColorManagement: false, validateImageData: false))
+        {
+          originalHeight = tif.PhysicalDimension.Height;
+          originalWidth = tif.PhysicalDimension.Width;
+        }
+      }
+      var ratioX = (double)width / originalWidth;
+      var ratioY = (double)height / originalHeight;
+      var ratio = Math.Min(ratioX, ratioY);
 
-      source.BeginInit();
-      source.UriSource = new Uri(path);
-      source.DecodePixelHeight = height;
-      source.DecodePixelWidth = width;
-      source.EndInit();
+      var newWidth = (int)(originalWidth * ratio);
+      var newHeight = (int)(originalHeight * ratio);
 
-      return source;
+      BitmapImage newBitmap = new BitmapImage();
+
+      newBitmap.BeginInit();
+      newBitmap.UriSource = new Uri(path);
+      newBitmap.DecodePixelHeight = newHeight;
+      newBitmap.DecodePixelWidth = newWidth;
+      newBitmap.EndInit();
+
+      return newBitmap;
     }
 
     public static void Save(this BitmapImage image, string filePath)
     {
-      BitmapEncoder encoder = new PngBitmapEncoder();
+      BitmapEncoder encoder = new JpegBitmapEncoder();
       encoder.Frames.Add(BitmapFrame.Create(image));
 
-      using (var fileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
+      using (var fileStream = new FileStream(filePath, FileMode.Create))
       {
         encoder.Save(fileStream);
       }

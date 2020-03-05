@@ -95,24 +95,8 @@ namespace Greenhouse.Models
       };
     }
 
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static int Offset(int x, int y, int width, int depth) => ((y * width) + x) * depth;
-
-    // X
-    private static readonly int[,] sobel_i = new int[,]
-    {
-      { -1, 0, 1 },
-      { -2, 0, 2 },
-      { -1, 0, 1 }
-    };
-
-    // Y
-    private static readonly int[,] sobel_j = new int[,]
-    {
-      { -1,-2,-1 },
-      {  0, 0, 0 },
-      {  1, 2, 1 }
-    };
     
     private static Histogram Process(RGB transparentColor, FilterThesholds thresholds, byte[][] buffers, int x, int y, int endx, int endy, int width, int depth)
     {
@@ -235,7 +219,7 @@ namespace Greenhouse.Models
         for (int j = y; j < endy; j++)
         {
           var offset = ((j * width) + i) * depth;
-          var color = (byte)(255-edgeBuffer[counter]);
+          var color = (byte)edgeBuffer[counter];
           buffers[BitmapIndex.EdgeFilter][offset] = color;
           buffers[BitmapIndex.EdgeFilter][offset + 1] = color;
           buffers[BitmapIndex.EdgeFilter][offset + 2] = color;

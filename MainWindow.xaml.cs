@@ -60,10 +60,11 @@ namespace Greenhouse
       {
         // Copy file to project
         var filePath = openFileDialog.FileName;
-        var randomFilename = Guid.NewGuid() + Path.GetExtension(filePath);
+        var randomFilename = Guid.NewGuid() + ".jpg";
         CurrentFile = new ImageManager(randomFilename);
         var targetFile = ImageManager.ImagePath + randomFilename;
-        File.Copy(filePath, targetFile);
+        var image = ImageHelper.Resize(filePath, 1024, 786);
+        image.Save(targetFile);
 
         // Create Thumb
         var thumb = ImageHelper.Resize(CurrentFile.Original.Path, 300, 200);
