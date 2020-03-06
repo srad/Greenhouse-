@@ -28,6 +28,9 @@ namespace Greenhouse.Models
     public ImageFile Leaf;
     public ImageFile Earth;
     public ImageFile Edge;
+    public ImageFile EdgeOverlay;
+    public ImageFile Blur;
+    public ImageFile Highpass;
 
     public ImageFile Selection;
 
@@ -45,12 +48,16 @@ namespace Greenhouse.Models
       Selection = new ImageFile(SelectionPath + file);
 
       var pngFilename = Path.GetFileNameWithoutExtension(file) + ".png";
+
       FilteredGreen = new ImageFile(FilteredPath + "green_" + pngFilename);
       FilteredRed = new ImageFile(FilteredPath + "red_" + pngFilename);
       Earth = new ImageFile(SegmentedPath + "earth_" + pngFilename);
       Leaf = new ImageFile(SegmentedPath + "leaf_" + pngFilename);
 
       Edge = new ImageFile(KernelPath + "edge_" + pngFilename);
+      EdgeOverlay = new ImageFile(KernelPath + "edge_overlay" + pngFilename);
+      Blur = new ImageFile(KernelPath + "blur_" + pngFilename);
+      Highpass = new ImageFile(KernelPath + "highpass_" + pngFilename);
 
       Directory.CreateDirectory(BasePath);
       Directory.CreateDirectory(ImagePath);
@@ -75,6 +82,9 @@ namespace Greenhouse.Models
       Earth.Delete();
       Leaf.Delete();
       Edge.Delete();
+      EdgeOverlay.Delete();
+      Blur.Delete();
+      Highpass.Delete();
     }
   }
 }

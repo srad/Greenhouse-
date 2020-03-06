@@ -11,13 +11,21 @@ using System.Windows.Media.Imaging;
 
 namespace Greenhouse.Models
 {
+  public struct ColCounter
+  {
+    public int X;
+    public int Y;
+    public int Counter;
+  }
 
-  public class ImageFile
+  public partial class ImageFile
   {
     public string Path;
     public Lazy<BitmapImage> BitmapImage;
     private readonly RGB Transparent = new RGB { R = 251, G = 1, B = 154 };
-    public static class BitmapIndex { public const int Red = 0, Green = 1, Leaf = 2, Earth = 3, EdgeFilter = 4; }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static int Offset(int x, int y, int width, int depth) => ((y * width) + x) * depth;
 
     public ImageFile(string path)
     {
@@ -33,7 +41,7 @@ namespace Greenhouse.Models
     public FilterResult Filter(FilterThesholds thresholds)
     {
       var results = new List<Histogram>();
-      var count = 5;
+      var count = 8;
       var bitmaps = new Bitmap[count];
       var bitmapData = new BitmapData[count];
       var buffers = new byte[count][];
@@ -76,6 +84,13 @@ namespace Greenhouse.Models
         System.Windows.MessageBox.Show("Error :" + e.Message);
       }
 
+      ScanlineVerticalLines(
+        buffers[BufferIdx.EdgeFilter].AsSpan(buffers[BufferIdx.EdgeFilter].GetLowerBound(0), buffers[BufferIdx.EdgeFilter].Length),
+        buffers[BufferIdx.LongestEdgeOverlay].AsSpan(buffers[BufferIdx.LongestEdgeOverlay].GetLowerBound(0), buffers[BufferIdx.LongestEdgeOverlay].Length),
+        w,
+        h,
+        depth);
+
       for (int i = 0; i < count; i++)
       {
         // Copy the buffer back to image
@@ -87,32 +102,30 @@ namespace Greenhouse.Models
       return new FilterResult
       {
         Histogram = results.Aggregate(new Histogram(), (a, b) => a.Add(b)),
-        RedBitmap = bitmaps[BitmapIndex.Red],
-        GreenBitmap = bitmaps[BitmapIndex.Green],
-        LeafBitmap = bitmaps[BitmapIndex.Leaf],
-        EarthBitmap = bitmaps[BitmapIndex.Earth],
-        EdgeBitmap = bitmaps[BitmapIndex.EdgeFilter]
+        RedBitmap = bitmaps[BufferIdx.Red],
+        GreenBitmap = bitmaps[BufferIdx.Green],
+        LeafBitmap = bitmaps[BufferIdx.Leaf],
+        EarthBitmap = bitmaps[BufferIdx.Earth],
+        EdgeBitmap = bitmaps[BufferIdx.EdgeFilter],
+        HighpassBitmap = bitmaps[BufferIdx.Highpass],
+        BlurBitmap = bitmaps[BufferIdx.Blur],
+        EdgeOverlayBitmap = bitmaps[BufferIdx.LongestEdgeOverlay]
       };
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    private static int Offset(int x, int y, int width, int depth) => ((y * width) + x) * depth;
-    
     private static Histogram Process(RGB transparentColor, FilterThesholds thresholds, byte[][] buffers, int x, int y, int endx, int endy, int width, int depth)
     {
       var h = new Histogram();
-      var eps = 1;
-      var dX = endx - x;
-      var dY = endy - y;
-      var edgeBuffer = new double[dX * dY];
+      var epsilon = 1;
+      var copyOriginalBuffer = new byte[buffers[BufferIdx.EdgeFilter].Length];
+      buffers[BufferIdx.EdgeFilter].CopyTo(copyOriginalBuffer, 0);
 
       double idx(int pos_x, int pos_y)
       {
         var index = Offset(pos_x, pos_y, width, depth);
-        return (buffers[BitmapIndex.EdgeFilter][index] + buffers[BitmapIndex.EdgeFilter][index + 1] + buffers[BitmapIndex.EdgeFilter][index + 2]) / 3.0;
+        return (copyOriginalBuffer[index] + copyOriginalBuffer[index + 1] + copyOriginalBuffer[index + 2]) / 3.0;
       };
 
-      var counter = 0;
       for (int i = x; i < endx; i++)
       {
         for (int j = y; j < endy; j++)
@@ -124,21 +137,7 @@ namespace Greenhouse.Models
           Byte r = buffers[0][offset + 2];
           // Byte a = buffers[0][offset + 3];
 
-          byte blur = (byte)(
-              (idx(i - 1, j - 1)
-            + idx(i, j - 1)
-            + idx(i + 1, j - 1)
-            + idx(i - 1, j)
-            + idx(i, j)
-            + idx(i + 1, j)
-            + idx(i - 1, j + 1)
-            + idx(i, j + 1)
-            + idx(i + 1, j + 1)) / 9);
-          buffers[BitmapIndex.EdgeFilter][offset] = blur;
-          buffers[BitmapIndex.EdgeFilter][offset + 1] = blur;
-          buffers[BitmapIndex.EdgeFilter][offset + 2] = blur;
-          
-          // Scobel operator
+          // Sobel operator
           var pixel_x =
               // Row above
               (idx(i + 1, j - 1) - idx(i - 1, j - 1))
@@ -155,79 +154,214 @@ namespace Greenhouse.Models
             // Row below
             + (idx(i + 1, j + 1) - idx(i + 1, j - 1));
 
-          var val = (Math.Ceiling(Math.Sqrt((pixel_x * pixel_x) + (pixel_y * pixel_y))));
           // Theta is 0 for vertical edges, but real world numbers...fine tune.
           var theta = Math.Atan2(pixel_y, pixel_x);
-          if (theta > -0.1 && theta < 0.1)
+          if (theta > -0.19 && theta < 0.19)
           {
-            edgeBuffer[counter] = val;
+            var mag = Math.Ceiling(Math.Sqrt((pixel_x * pixel_x) + (pixel_y * pixel_y)));
+            byte val = 0;
+            if (mag < 60)
+            {
+              val = (byte)(255 - mag);
+            }
+            buffers[BufferIdx.EdgeFilter][offset] = val;
+            buffers[BufferIdx.EdgeFilter][offset + 1] = val;
+            buffers[BufferIdx.EdgeFilter][offset + 2] = val;
           }
-          counter++;
+          else
+          {
+            buffers[BufferIdx.EdgeFilter][offset] = (byte)255;
+            buffers[BufferIdx.EdgeFilter][offset + 1] = (byte)255;
+            buffers[BufferIdx.EdgeFilter][offset + 2] = (byte)255;
+          }
 
           h.RGBArray.R[r]++;
           h.RGBArray.G[g]++;
           h.RGBArray.B[b]++;
 
-          var redRatio = ((r + eps) / ((Math.Max(g, b) + eps)));
-          var greenRatio = ((g + eps) / ((Math.Max(r, b) + eps)));
+          var redRatio = ((r + epsilon) / ((Math.Max(g, b) + epsilon)));
+          var greenRatio = ((g + epsilon) / ((Math.Max(r, b) + epsilon)));
           var redDominant = redRatio > thresholds.RedMinRatio;
           var greenDominant = greenRatio > thresholds.GreenMinRatio;
 
           // Set other color only blue
           if (!redDominant)
           {
-            buffers[BitmapIndex.Red][offset] = (byte)transparentColor.B;
-            buffers[BitmapIndex.Red][offset + 1] = (byte)transparentColor.G;
-            buffers[BitmapIndex.Red][offset + 2] = (byte)transparentColor.R;
+            buffers[BufferIdx.Red][offset] = (byte)transparentColor.B;
+            buffers[BufferIdx.Red][offset + 1] = (byte)transparentColor.G;
+            buffers[BufferIdx.Red][offset + 2] = (byte)transparentColor.R;
           }
           else // Red is dominant
           {
-            buffers[BitmapIndex.Leaf][offset] = (byte)transparentColor.B;
-            buffers[BitmapIndex.Leaf][offset + 1] = (byte)transparentColor.G;
-            buffers[BitmapIndex.Leaf][offset + 2] = (byte)transparentColor.R;
+            buffers[BufferIdx.Leaf][offset] = (byte)transparentColor.B;
+            buffers[BufferIdx.Leaf][offset + 1] = (byte)transparentColor.G;
+            buffers[BufferIdx.Leaf][offset + 2] = (byte)transparentColor.R;
 
-            buffers[BitmapIndex.Red][offset] = (byte)10;
-            buffers[BitmapIndex.Red][offset + 1] = (byte)69;
-            buffers[BitmapIndex.Red][offset + 2] = (byte)130;
+            buffers[BufferIdx.Red][offset] = (byte)10;
+            buffers[BufferIdx.Red][offset + 1] = (byte)69;
+            buffers[BufferIdx.Red][offset + 2] = (byte)130;
           }
           if (!greenDominant)
           {
-            buffers[BitmapIndex.Green][offset] = (byte)transparentColor.B;
-            buffers[BitmapIndex.Green][offset + 1] = (byte)transparentColor.G;
-            buffers[BitmapIndex.Green][offset + 2] = (byte)transparentColor.R;
+            buffers[BufferIdx.Green][offset] = (byte)transparentColor.B;
+            buffers[BufferIdx.Green][offset + 1] = (byte)transparentColor.G;
+            buffers[BufferIdx.Green][offset + 2] = (byte)transparentColor.R;
 
-            buffers[BitmapIndex.Earth][offset] = b;
-            buffers[BitmapIndex.Earth][offset + 1] = g;
-            buffers[BitmapIndex.Earth][offset + 2] = r;
+            buffers[BufferIdx.Earth][offset] = b;
+            buffers[BufferIdx.Earth][offset + 1] = g;
+            buffers[BufferIdx.Earth][offset + 2] = r;
           }
           else // Green is dominant
           {
-            buffers[BitmapIndex.Earth][offset] = (byte)transparentColor.B;
-            buffers[BitmapIndex.Earth][offset + 1] = (byte)transparentColor.G;
-            buffers[BitmapIndex.Earth][offset + 2] = (byte)transparentColor.R;
+            buffers[BufferIdx.Earth][offset] = (byte)transparentColor.B;
+            buffers[BufferIdx.Earth][offset + 1] = (byte)transparentColor.G;
+            buffers[BufferIdx.Earth][offset + 2] = (byte)transparentColor.R;
 
-            buffers[BitmapIndex.Green][offset] = (byte)0;
-            buffers[BitmapIndex.Green][offset + 1] = (byte)255;
-            buffers[BitmapIndex.Green][offset + 2] = (byte)0;
+            buffers[BufferIdx.Green][offset] = (byte)0;
+            buffers[BufferIdx.Green][offset + 1] = (byte)255;
+            buffers[BufferIdx.Green][offset + 2] = (byte)0;
           }
         }
       }
 
-      counter = 0;
+      copyOriginalBuffer = null;
+
+      // Retain edge for display purposes, duplicate
+      var startOffset = ((y * width) + x) * depth;
+      var chunkLength = ((((endy - y) * width) + (endx - x + 1)) * depth);
+
+      // Don't overwrite, copy: Edges -> Blur
+      Array.Copy(buffers[BufferIdx.EdgeFilter], startOffset, buffers[BufferIdx.Blur], startOffset, chunkLength);
+      VerticalBlur(buffers[BufferIdx.Blur], width, depth, x, (y == 0 ? 20 : y), endx, endy);
+
+      // Don't overwrite blur filter, copy: Blur -> Highpass
+      Array.Copy(buffers[BufferIdx.Blur], startOffset, buffers[BufferIdx.Highpass], startOffset, chunkLength);
+
+      HighpassFilter(buffers[BufferIdx.Highpass], width, depth, x, y, endx, endy);
+
+      return h;
+    }
+
+    #region filters
+    private static void VerticalBlur(byte[] blurBuffer, int width, int depth, int x, int y, int endx, int endy)
+    {
+      for (int z = 0; z < 70; z++)
+      {
+        // You cannot overwrite the same image while you're filtering it, create copy
+        var edgeCopy = new byte[blurBuffer.Length];
+        blurBuffer.CopyTo(edgeCopy, 0);
+
+        double idx(int pos_x, int pos_y)
+        {
+          var index = Offset(pos_x, pos_y, width, depth);
+          return edgeCopy[index];
+        };
+
+        // Skip edges
+        for (int i = (x == 0 ? 2 : 0); i < endx; i++)
+        {
+          for (int j = y; j < endy; j++)
+          {
+            var offset = ((j * width) + i) * depth;
+
+            byte blur = (byte)((idx(i, j - 1) + idx(i, j) + idx(i, j + 1)) / 3.0);
+            blurBuffer[offset] = blur;
+            blurBuffer[offset + 1] = blur;
+            blurBuffer[offset + 2] = blur;
+          }
+        }
+      }
+    }
+
+    private static void HighpassFilter(byte[] highpassBuffer, int width, int depth, int x, int y, int endx, int endy)
+    {
+      // Highpass filter
       for (int i = x; i < endx; i++)
       {
         for (int j = y; j < endy; j++)
         {
           var offset = ((j * width) + i) * depth;
-          var color = (byte)edgeBuffer[counter];
-          buffers[BitmapIndex.EdgeFilter][offset] = color;
-          buffers[BitmapIndex.EdgeFilter][offset + 1] = color;
-          buffers[BitmapIndex.EdgeFilter][offset + 2] = color;
-          counter++;
+          byte col = highpassBuffer[offset] < 150 ? (byte)0 : (byte)255;
+          highpassBuffer[offset] = col;
+          highpassBuffer[offset + 1] = col;
+          highpassBuffer[offset + 2] = col;
+        }
+      }
+    }
+
+    /// <summary>
+    /// Scanline algorithm: Count vertical intersecting with horizontal line
+    /// Interpolate horizontally for robustness.
+    /// </summary>
+    /// <param name="edgeBuffer"></param>
+    /// <param name="overlayBuffer"></param>
+    /// <param name="w"></param>
+    /// <param name="h"></param>
+    /// <param name="depth"></param>
+    private static void ScanlineVerticalLines(Span<byte> edgeBuffer, Span<byte> overlayBuffer, int w, int h, int depth)
+    {
+      var vCount = new int[w, h];
+      for (int y = 5; y < h - 5; y++)
+      {
+        for (int x = 5; x < w - 5; x++)
+        {
+          int offset = ((y * w) + x) * depth;
+          double sum = 0d;
+
+          // Horizontal average / interpolation,accepts slight slopes
+          for (int k = -3; k <= 3; k++)
+          {
+            sum += edgeBuffer[offset + (k * depth)];
+          }
+          double avg = sum / 7.0d;
+
+          // Lowpass filter: If not really white then count it
+          vCount[x, y] = 0;
+          if (avg < 120)
+          {
+            vCount[x, y] = 1;
+          }
         }
       }
 
-      return h;
+      var maxCol = new ColCounter { X = 0, Y = 0, Counter = 0 };
+      // Verticall sum of continous vertical column
+      for (int x = 0; x < w; x++)
+      {
+        int colSum = 0;
+        for (int y = 5; y < h - 5; y++)
+        {
+          int offset = ((y * w) + x) * depth;
+          if (vCount[x, y] == 1)
+          {
+            colSum++;
+          }
+          else
+          {
+            if (maxCol.Counter < colSum)
+            {
+              maxCol.X = x;
+              maxCol.Y = y;
+              maxCol.Counter = colSum;
+            }
+          }
+        }
+      }
+
+      // Vertical line
+      for (int y = maxCol.Y - maxCol.Counter; y < maxCol.Y; y++)
+      {
+        // Like thickness
+        for (int x = maxCol.X - 2; x < maxCol.X + 2; x++)
+        {
+          var offset = ((y * w) + x) * depth;
+          overlayBuffer[offset] = (byte)(edgeBuffer[offset] / 2);
+          overlayBuffer[offset + 1] = (byte)(edgeBuffer[offset + 1] / 2);
+          overlayBuffer[offset + 2] = 255;
+          overlayBuffer[offset + 3] = 40;
+        }
+      }
     }
+    #endregion
   }
 }

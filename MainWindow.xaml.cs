@@ -113,6 +113,9 @@ namespace Greenhouse
       segmentedLeaf.Source = CurrentFile.Leaf.BitmapImage.Value;
 
       ImageEdge.Source = CurrentFile.Edge.BitmapImage.Value;
+      ImageEdgeOverlay.Source = CurrentFile.EdgeOverlay.BitmapImage.Value;
+      ImageBlur.Source = CurrentFile.Blur.BitmapImage.Value;
+      ImageHighpass.Source = CurrentFile.Highpass.BitmapImage.Value;
 
       var imageSize = GreenImageSize();
       GridSizeX = (int)(imageSize.DisplayWidth / GridX);
@@ -319,6 +322,7 @@ namespace Greenhouse
 
     private void ButtonSave_Click(object sender, RoutedEventArgs e)
     {
+      return;
       /*
       foreach (var child in canvasGreen.Children)
       {
@@ -332,7 +336,7 @@ namespace Greenhouse
       var ratioY = size.DisplayedHeight / size.Height;
       var source = new System.Drawing.Bitmap(CurrentFile.FilteredGreen.Path);
       var destination = new System.Drawing.Bitmap((int)source.Width, (int)source.Height);
-      var gridXScaled = GridSizeX * ratioX; 
+      var gridXScaled = GridSizeX * ratioX;
       var gridYScaled = GridSizeY * ratioY;
 
       for (int x = 0; x < GridSizeX; x++)
@@ -350,7 +354,7 @@ namespace Greenhouse
       }
       var image = ImageSourceFromBitmap(destination);
       destination.Save(CurrentFile.Selection.Path);
-      SelectedImageArea.Source = image;
+      //SelectedImageArea.Source = image;
     }
 
     public static void CopyRegionIntoImage(System.Drawing.Bitmap srcBitmap, System.Drawing.Rectangle srcRegion, ref System.Drawing.Bitmap destBitmap, System.Drawing.Rectangle destRegion)
@@ -374,6 +378,26 @@ namespace Greenhouse
         return System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
       }
       finally { DeleteObject(handle); }
+    }
+
+    private void ImageEdge_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+      OpenFile(CurrentFile.Edge.Path);
+    }
+
+    private void ImageEdgeOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+      OpenFile(CurrentFile.EdgeOverlay.Path);
+    }
+
+    private void ImageBlur_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+      OpenFile(CurrentFile.Blur.Path);
+    }
+
+    private void ImageHighpass_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+      OpenFile(CurrentFile.Highpass.Path);
     }
   }
 }

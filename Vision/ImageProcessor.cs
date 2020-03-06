@@ -32,6 +32,9 @@ namespace Greenhouse.Vision
         filterResult.LeafBitmap.Save(ImageFile.Leaf.Path, ImageFormat.Png);
         filterResult.EarthBitmap.Save(ImageFile.Earth.Path, ImageFormat.Png);
         filterResult.EdgeBitmap.Save(ImageFile.Edge.Path, ImageFormat.Png);
+        filterResult.EdgeOverlayBitmap.Save(ImageFile.EdgeOverlay.Path, ImageFormat.Png);
+        filterResult.BlurBitmap.Save(ImageFile.Blur.Path, ImageFormat.Png);
+        filterResult.HighpassBitmap.Save(ImageFile.Highpass.Path, ImageFormat.Png);
         filterResult.Histogram.Draw(filterResult, false, 256, 200);
         filterResult.Histogram.HistogramR.Save(ImageFile.HistR.Path);
         filterResult.Histogram.HistogramG.Save(ImageFile.HistG.Path);
