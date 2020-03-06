@@ -304,7 +304,7 @@ namespace Greenhouse.Models
     /// <param name="depth"></param>
     private static void ScanlineVerticalLines(Span<byte> edgeBuffer, Span<byte> overlayBuffer, int avgWindow, int w, int h, int depth)
     {
-      var vCount = new int[w, h];
+      var vCount = new bool[w, h];
       int edge = 5;
       for (int y = edge; y < h - edge; y++)
       {
@@ -321,10 +321,10 @@ namespace Greenhouse.Models
           double avg = sum / (2 * avgWindow + 1);
 
           // Lowpass filter: If not really white then count it
-          vCount[x, y] = 0;
+          vCount[x, y] = false;
           if (avg < 230)
           {
-            vCount[x, y] = 1;
+            vCount[x, y] = true;
           }
         }
       }
@@ -336,7 +336,7 @@ namespace Greenhouse.Models
         int colSum = 0;
         for (int y = 0; y < h; y++)
         {
-          if (vCount[x, y] == 1)
+          if (vCount[x, y])
           {
             colSum++;
           }
@@ -348,6 +348,7 @@ namespace Greenhouse.Models
               maxCol.Y = y - colSum;
               maxCol.Length = colSum;
             }
+            colSum = 0;
           }
         }
       }
