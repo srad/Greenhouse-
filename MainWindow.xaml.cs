@@ -3,7 +3,6 @@ using Greenhouse.ViewModels;
 using Greenhouse.Vision;
 using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -21,21 +20,12 @@ namespace Greenhouse
     private ImageProcessor ImageProcessor;
     private ImageManager CurrentFile;
     private readonly ImageListView ImageListView = new ImageListView();
-    private bool PrimaryMouseDown = false;
-    private int GridY = 40;
-    private int GridX = 40;
     private bool ImageLoaded = false;
-    private bool[,] GridSelection;
-    private int GridSizeX;
-    private int GridSizeY;
-    private Stack<UIElement> RedoStack = new Stack<UIElement>();
-    private Size WindowStartSize;
     private readonly FitlerValues FilterValues = new FitlerValues();
 
     public MainWindow()
     {
       InitializeComponent();
-      WindowStartSize = new Size(ActualHeight, ActualWidth);
 
       if (Directory.Exists(ImageManager.BasePath))
       {
@@ -102,7 +92,6 @@ namespace Greenhouse
 
     private void ProcessFile()
     {
-      canvasGreen.Children.Clear();
       imgInput.Source = CurrentFile.Original.BitmapImage.Value;
       ImageProcessor = new ImageProcessor(CurrentFile);
 
@@ -121,7 +110,7 @@ namespace Greenhouse
       imgHistB.Source = CurrentFile.HistB.BitmapImage.Value;
 
       filterRed.Source = CurrentFile.FilteredRed.BitmapImage.Value;
-      filterGreen.ImageSource = CurrentFile.FilteredGreen.BitmapImage.Value;
+      filterGreen.Source = CurrentFile.FilteredGreen.BitmapImage.Value;
       segmentedEarth.Source = CurrentFile.Earth.BitmapImage.Value;
       segmentedLeaf.Source = CurrentFile.Leaf.BitmapImage.Value;
 
@@ -130,32 +119,8 @@ namespace Greenhouse
       ImageBlur.Source = CurrentFile.Blur.BitmapImage.Value;
       ImageHighpass.Source = CurrentFile.Highpass.BitmapImage.Value;
 
-      var imageSize = GreenImageSize();
-      GridSizeX = (int)(imageSize.DisplayWidth / GridX);
-      GridSizeY = (int)(imageSize.DisplayedHeight / GridY);
-
       OriginalImageLabel.Content = $"Original Image: {(int)CurrentFile.Original.BitmapImage.Value.Width}x{(int)CurrentFile.Original.BitmapImage.Value.Height} ({StrFormatByteSize(new FileInfo(CurrentFile.Original.Path).Length)})";
-
-      // Is there some edge left at the right?
-      if ((imageSize.DisplayWidth % GridX) > 0)
-      {
-        GridSizeX += 1;
-      }
-      if ((imageSize.DisplayedHeight % GridY) > 0)
-      {
-        GridSizeY += 1;
-      }
-
-      GridSelection = new bool[GridSizeX, GridSizeY];
-      for (int x = 0; x < GridSizeX; x++)
-      {
-        for (int y = 0; y < GridSizeY; y++)
-        {
-          GridSelection[x, y] = false;
-        }
-      }
       ImageLoaded = true;
-      RedoStack.Clear();
     }
 
     private void Image_MouseDown(object sender, MouseButtonEventArgs e)
@@ -225,149 +190,6 @@ namespace Greenhouse
 
       rect.SetValue(System.Windows.Controls.Canvas.LeftProperty, (double)pos.PixelX);
       rect.SetValue(System.Windows.Controls.Canvas.TopProperty, (double)pos.PixelY);
-    }
-
-    private GridPos MouseGridPos(Point e)
-    {
-      return new GridPos
-      {
-        GridX = (int)Math.Floor(e.X / GridX),
-        GridY = (int)Math.Floor(e.Y / GridY),
-        PixelX = (int)Math.Floor(e.X / GridX) * GridX,
-        PixelY = (int)Math.Floor(e.Y / GridY) * GridY
-      };
-    }
-
-    private void CanvasGreen_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-      PrimaryMouseDown = true;
-      DrawGrid(e.GetPosition(canvasGreen));
-    }
-
-    private void DrawGrid(Point e)
-    {
-      if (!ImageLoaded)
-      {
-        return;
-      }
-
-      if (!PrimaryMouseDown)
-      {
-        return;
-      }
-      PrimaryMouseDown = true;
-
-      var pos = MouseGridPos(e);
-      if (pos.GridX >= GridSizeX || pos.GridY >= GridSizeY)
-      {
-        return;
-      }
-
-      if (GridSelection[pos.GridX, pos.GridY])
-      {
-        return;
-      }
-      GridSelection[pos.GridX, pos.GridY] = true;
-
-      Debug.WriteLine(pos);
-      Rect(pos, GridX, GridY, canvasGreen);
-    }
-
-    private void CanvasGreen_MouseMove(object sender, MouseEventArgs e)
-    {
-      DrawGrid(e.GetPosition(canvasGreen));
-    }
-
-    private void CanvasGreen_MouseUp(object sender, MouseButtonEventArgs e)
-    {
-      PrimaryMouseDown = false;
-    }
-
-    private void ButtonUndoGreen_Click(object sender, RoutedEventArgs e)
-    {
-      if (canvasGreen.Children.Count > 0)
-      {
-        var lastItem = canvasGreen.Children[canvasGreen.Children.Count - 1];
-        RedoStack.Push(lastItem);
-        canvasGreen.Children.Remove(canvasGreen.Children[canvasGreen.Children.Count - 1]);
-      }
-    }
-
-    private void RedoGreenButton_Click(object sender, RoutedEventArgs e)
-    {
-      if (RedoStack.Count > 0)
-      {
-        canvasGreen.Children.Add(RedoStack.Pop());
-      }
-    }
-
-    /// <summary>
-    /// Calculates the actual image in the cell (which can change size depending on the window size).
-    /// </summary>
-    /// <returns></returns>
-    private SizeInfo GreenImageSize()
-    {
-      var actualH = GridGreen.ActualHeight;
-      var h = CurrentFile.Original.BitmapImage.Value.Height;
-      var r = actualH / h;
-      var w2 = filterGreen.ImageSource.Width * r;
-
-      return new SizeInfo
-      {
-        DisplayedHeight = actualH,
-        DisplayWidth = w2,
-        Height = h,
-        Width = CurrentFile.Original.BitmapImage.Value.Width
-      };
-    }
-
-    private void ButtonClearSelection_Click(object sender, RoutedEventArgs e)
-    {
-      canvasGreen.Children.Clear();
-      for (int x = 0; x < GridSizeX; x++)
-      {
-        for (int y = 0; y < GridSizeY; y++)
-        {
-          GridSelection[x, y] = false;
-        }
-      }
-    }
-
-    private void ButtonSave_Click(object sender, RoutedEventArgs e)
-    {
-      return;
-      /*
-      foreach (var child in canvasGreen.Children)
-      {
-        var shape = child as System.Windows.Shapes.Rectangle;
-        var pos = shape.Tag as GridPos;
-        Debug.WriteLine($"{pos}");
-      }
-      */
-      var size = GreenImageSize();
-      var ratioX = size.DisplayWidth / size.Width;
-      var ratioY = size.DisplayedHeight / size.Height;
-      var source = new System.Drawing.Bitmap(CurrentFile.FilteredGreen.Path);
-      var destination = new System.Drawing.Bitmap((int)source.Width, (int)source.Height);
-      var gridXScaled = GridSizeX * ratioX;
-      var gridYScaled = GridSizeY * ratioY;
-
-      for (int x = 0; x < GridSizeX; x++)
-      {
-        for (int y = 0; y < GridSizeY; y++)
-        {
-          if (GridSelection[x, y])
-          {
-            var scaledX = x * gridXScaled;
-            var scaledY = y * gridYScaled;
-            var rect = new System.Drawing.Rectangle((int)scaledX, (int)scaledY, (int)gridXScaled, (int)gridYScaled);
-            CopyRegionIntoImage(source, rect, ref destination, rect);
-          }
-        }
-      }
-      var image = ImageSourceFromBitmap(destination);
-      destination.Save(CurrentFile.Selection.Path);
-      //SelectedImageArea.Source = image;
     }
 
     public static void CopyRegionIntoImage(System.Drawing.Bitmap srcBitmap, System.Drawing.Rectangle srcRegion, ref System.Drawing.Bitmap destBitmap, System.Drawing.Rectangle destRegion)

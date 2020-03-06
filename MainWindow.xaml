@@ -84,19 +84,19 @@
 
     <Grid Margin="5,5,5,0" Grid.Row="1" Grid.Column="0" Background="FloralWhite">
       <Grid>
-        
+
         <Grid.RowDefinitions>
           <RowDefinition Height="100"/>
           <RowDefinition Height="35"/>
           <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
+
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"/>
           <ColumnDefinition Width="*"/>
           <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        
+
         <Grid Grid.Column="0" Grid.Row="0">
           <Border BorderBrush="Gray" BorderThickness="1" Margin="2">
             <Image x:Name="imgHistR" Source="./Resources/leaf.png" Margin="0"/>
@@ -105,24 +105,24 @@
 
         <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3">
           <Grid>
-          <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="20"/>
-            <RowDefinition Height="30"/>
-          </Grid.RowDefinitions>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="40"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="40"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="40"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="40"/>
-          </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="30"/>
+              <RowDefinition Height="30"/>
+              <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="40"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="40"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="40"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="40"/>
+            </Grid.ColumnDefinitions>
 
-          <!--
+            <!--
           <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="0">
             <Image x:Name="SelectedImageArea" Source="./Resources/leaf.png" Stretch="Uniform"/>
           </Border>
@@ -136,29 +136,37 @@
             </Border>
             <Slider x:Name="FilterValTheta" Grid.Row="1" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.01" IsSnapToTickEnabled="True" />
             <Label Grid.Row="1" Grid.Column="1" Content="{Binding Value, ElementName=FilterValTheta}"/>
-            <Label Content="Edge-Theta" Grid.Row="2" Grid.Column="0"  Grid.ColumnSpan="2" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
+            <Border BorderBrush="Gray" BorderThickness="1" Margin="2"  VerticalAlignment="Center" Grid.Row="2" Grid.Column="0"  Grid.ColumnSpan="2">
+              <Label Content="Edge-Theta" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
+            </Border>
 
             <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="2" Grid.ColumnSpan="2">
               <Image x:Name="ImageBlur" MouseDown="ImageBlur_MouseDown" Source="./Resources/leaf.png"/>
             </Border>
             <Slider x:Name="FilterValBlurRounds" Grid.Row="1" Grid.Column="2" Minimum="0" Maximum="200" TickFrequency="1" IsSnapToTickEnabled="True" />
             <Label Grid.Row="1" Grid.Column="3" Content="{Binding Value, ElementName=FilterValBlurRounds}"/>
-            <Label Content="V-Blur" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
+            <Border BorderBrush="Gray" BorderThickness="1" Margin="2"  VerticalAlignment="Center" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2">
+              <Label Content="V-Blur" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
+            </Border>
 
             <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="4" Grid.ColumnSpan="2">
               <Image x:Name="ImageHighpass" MouseDown="ImageHighpass_MouseDown" Source="./Resources/leaf.png"/>
             </Border>
             <Slider x:Name="FitlerValPassfilter" Grid.Row="1" Grid.Column="4" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" />
             <Label Grid.Row="1" Grid.Column="5" Content="{Binding Value, ElementName=FitlerValPassfilter}"/>
-            <Label Content="Filter low" Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="2" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
+            <Border BorderBrush="Gray" BorderThickness="1" Margin="2"  VerticalAlignment="Center" Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="2">
+              <Label Content="Filter low" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
+            </Border>
 
             <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="6" Grid.ColumnSpan="2">
               <Image x:Name="ImageEdgeOverlay" MouseDown="ImageEdgeOverlay_MouseDown" Source="./Resources/leaf.png"/>
             </Border>
             <Slider x:Name="FilterValScanline" Grid.Row="1" Grid.Column="6" Minimum="0" Maximum="50" TickFrequency="1" IsSnapToTickEnabled="True" />
             <Label Grid.Row="1" Grid.Column="7" Content="{Binding Value, ElementName=FilterValScanline}"/>
-            <Label Content="Scanline Window" Grid.Row="2" Grid.Column="6" Grid.ColumnSpan="2" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
-        </Grid>
+            <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Row="2" Grid.Column="6" Grid.ColumnSpan="2" VerticalAlignment="Center">
+              <Label Content="Scanline Window" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
+            </Border>
+          </Grid>
         </Border>
 
         <Grid Grid.Column="0" Grid.Row="1">
@@ -227,7 +235,6 @@
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*"/>
         <ColumnDefinition Width="50"/>
-        <ColumnDefinition Width="30"/>
       </Grid.ColumnDefinitions>
       <Grid.RowDefinitions>
         <RowDefinition Height="*"/>
@@ -245,32 +252,10 @@
         <Image Grid.Column="1" Grid.Row="0"  x:Name="segmentedLeaf" Source="./Resources/leaf.png" Margin="5" />
         <Label Grid.Row="1" Grid.Column="0" Content="Clustered green-leaf" FontSize="13" HorizontalAlignment="Center"/>
         <Label Grid.Row="1" Grid.Column="1" Content="Segmented green-leaf" FontSize="13" HorizontalAlignment="Center"/>
-
-        <Canvas Grid.Column="0" Grid.Row="0" Margin="0" Width="{Binding Width, ElementName=GridGreen}" Height="{Binding Height, ElementName=GridGreen}" x:Name="canvasGreen" MouseDown="CanvasGreen_MouseDown" MouseMove="CanvasGreen_MouseMove" MouseUp="CanvasGreen_MouseUp">
-          <Canvas.Background>
-            <ImageBrush Stretch="Uniform" AlignmentX="Left" AlignmentY="Top" x:Name="filterGreen" ImageSource="./Resources/leaf.png" />
-          </Canvas.Background>
-        </Canvas>
+        <Image Grid.Column="0" Grid.Row="0"  x:Name="filterGreen" Source="./Resources/leaf.png" Margin="5,5,4.6,5" />
       </Grid>
       <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="2" x:Name="GreenThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
-      <Label Grid.Row="1" Grid.Column="2" Content="{Binding Value, ElementName=GreenThreshold}" FontSize="13"/>
-      <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Stretch" Width="35" Margin="0,10,0,10">
-        <Button Click="OpenGreenFiltered" Margin="2">
-          <Image Source="./Resources/Button/photo.png"/>
-        </Button>
-        <Button x:Name="ButtonUndoGreen" Click="ButtonUndoGreen_Click" Margin="2">
-          <Image Source="./Resources/Button/undo.png"/>
-        </Button>
-        <Button x:Name="RedoGreenButton" Click="RedoGreenButton_Click" Margin="2">
-          <Image Source="./Resources/Button/redo.png"/>
-        </Button>
-        <Button Margin="2" Name="ButtonSave" Click="ButtonSave_Click">
-          <Image Source="./Resources/Button/save.png"/>
-        </Button>
-        <Button Margin="2" Name="ButtonClearSelection" Click="ButtonClearSelection_Click">
-          <Image Source="./Resources/Button/trash.png"/>
-        </Button>
-      </StackPanel>
-    </Grid>
+      <Label Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" Content="{Binding Value, ElementName=GreenThreshold}" FontSize="13"/>
+     </Grid>
   </Grid>
 </Window>
