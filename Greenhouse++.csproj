@@ -73,7 +73,7 @@
     <Compile Include="Models\BufferIdx.cs" />
     <Compile Include="Models\GridPos.cs" />
     <Compile Include="Models\FilterResult.cs" />
-    <Compile Include="Models\FilterThesholds.cs" />
+    <Compile Include="Models\FilterValues.cs" />
     <Compile Include="Models\ImageFile.cs" />
     <Compile Include="Models\ImageManager.cs" />
     <Compile Include="Models\SizeInfo.cs" />

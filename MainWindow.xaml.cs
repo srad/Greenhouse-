@@ -30,6 +30,7 @@ namespace Greenhouse
     private int GridSizeY;
     private Stack<UIElement> RedoStack = new Stack<UIElement>();
     private Size WindowStartSize;
+    private readonly FitlerValues FilterValues = new FitlerValues();
 
     public MainWindow()
     {
@@ -47,6 +48,11 @@ namespace Greenhouse
       }
 
       TvBox.ItemsSource = ImageListView;
+
+      FilterValBlurRounds.Value = FilterValues.BlurRounds;
+      FilterValTheta.Value = FilterValues.ThetaTheshold;
+      FitlerValPassfilter.Value = FilterValues.WhiteThreshold;
+      FilterValScanline.Value = FilterValues.ScanlineInterpolationWidth;
     }
 
     private void btnOpenFile_Click(object sender, RoutedEventArgs e)
@@ -100,8 +106,15 @@ namespace Greenhouse
       imgInput.Source = CurrentFile.Original.BitmapImage.Value;
       ImageProcessor = new ImageProcessor(CurrentFile);
 
-      // Color distribution of the original image
-      var filterResult = ImageProcessor.Start(new FilterThesholds(green: GreenThreshold.Value, red: RedThreshold.Value));
+      // Pass filter values
+      FilterValues.Green = GreenThreshold.Value;
+      FilterValues.Red = RedThreshold.Value;
+      FilterValues.BlurRounds = (int)FilterValBlurRounds.Value;
+      FilterValues.ThetaTheshold = FilterValTheta.Value;
+      FilterValues.WhiteThreshold = (byte)FitlerValPassfilter.Value;
+      FilterValues.ScanlineInterpolationWidth = (int)FilterValScanline.Value;
+
+      ImageProcessor.Start(FilterValues);
 
       imgHistR.Source = CurrentFile.HistR.BitmapImage.Value;
       imgHistG.Source = CurrentFile.HistG.BitmapImage.Value;

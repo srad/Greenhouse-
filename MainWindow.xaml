@@ -107,14 +107,19 @@
           <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="30"/>
             <RowDefinition Height="20"/>
             <RowDefinition Height="30"/>
           </Grid.RowDefinitions>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="40"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="40"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="40"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="40"/>
           </Grid.ColumnDefinitions>
 
           <!--
@@ -124,27 +129,35 @@
           <Label Content="Selection" Grid.Row="1" Grid.Column="0" FontSize="10" Margin="0" Padding="2" HorizontalAlignment="Center"/>
           -->
 
-            <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Content="Pipeline (left to right)" Margin="1" FontSize="14" Background="Gold" HorizontalContentAlignment="Center"/>
+            <Label Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="8" Content="Pipeline (left to right)" Margin="1" FontSize="14" Background="Gold" HorizontalContentAlignment="Center"/>
 
-            <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="0">
+            <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="0" Grid.ColumnSpan="2">
               <Image x:Name="ImageEdge" MouseDown="ImageEdge_MouseDown" Source="./Resources/leaf.png"/>
             </Border>
-            <Label Content="Edges" Grid.Row="1" Grid.Column="0" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
+            <Slider x:Name="FilterValTheta" Grid.Row="1" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.01" IsSnapToTickEnabled="True" />
+            <Label Grid.Row="1" Grid.Column="1" Content="{Binding Value, ElementName=FilterValTheta}"/>
+            <Label Content="Edge-Theta" Grid.Row="2" Grid.Column="0"  Grid.ColumnSpan="2" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
 
-            <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="1">
+            <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="2" Grid.ColumnSpan="2">
               <Image x:Name="ImageBlur" MouseDown="ImageBlur_MouseDown" Source="./Resources/leaf.png"/>
             </Border>
-            <Label Content="Blured" Grid.Row="1" Grid.Column="1" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
+            <Slider x:Name="FilterValBlurRounds" Grid.Row="1" Grid.Column="2" Minimum="0" Maximum="200" TickFrequency="1" IsSnapToTickEnabled="True" />
+            <Label Grid.Row="1" Grid.Column="3" Content="{Binding Value, ElementName=FilterValBlurRounds}"/>
+            <Label Content="V-Blur" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
 
-            <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="2">
+            <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="4" Grid.ColumnSpan="2">
               <Image x:Name="ImageHighpass" MouseDown="ImageHighpass_MouseDown" Source="./Resources/leaf.png"/>
             </Border>
-            <Label Content="Highpass" Grid.Row="1" Grid.Column="2" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
+            <Slider x:Name="FitlerValPassfilter" Grid.Row="1" Grid.Column="4" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" />
+            <Label Grid.Row="1" Grid.Column="5" Content="{Binding Value, ElementName=FitlerValPassfilter}"/>
+            <Label Content="Filter low" Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="2" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
 
-            <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="3">
+            <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="6" Grid.ColumnSpan="2">
               <Image x:Name="ImageEdgeOverlay" MouseDown="ImageEdgeOverlay_MouseDown" Source="./Resources/leaf.png"/>
             </Border>
-            <Label Content="Edge max" Grid.Row="1" Grid.Column="3" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
+            <Slider x:Name="FilterValScanline" Grid.Row="1" Grid.Column="6" Minimum="0" Maximum="50" TickFrequency="1" IsSnapToTickEnabled="True" />
+            <Label Grid.Row="1" Grid.Column="7" Content="{Binding Value, ElementName=FilterValScanline}"/>
+            <Label Content="Scanline Window" Grid.Row="2" Grid.Column="6" Grid.ColumnSpan="2" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
         </Grid>
         </Border>
 

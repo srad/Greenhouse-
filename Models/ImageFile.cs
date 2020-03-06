@@ -15,7 +15,7 @@ namespace Greenhouse.Models
   {
     public int X;
     public int Y;
-    public int Counter;
+    public int Length;
   }
 
   public partial class ImageFile
@@ -38,7 +38,7 @@ namespace Greenhouse.Models
       File.Delete(Path);
     }
 
-    public FilterResult Filter(FilterThesholds thresholds)
+    public FilterResult Filter(FitlerValues filters)
     {
       var results = new List<Histogram>();
       var count = 8;
@@ -77,7 +77,7 @@ namespace Greenhouse.Models
         var threads = Environment.ProcessorCount;
         double chunks = (double)h / threads;
         // Leave a image edge of 1px for kernel
-        Parallel.For(0, threads, i => results.Add(Process(Transparent, thresholds, buffers, 1, (int)(i * chunks) + 1, w - 1, (int)((i + 1) * chunks) + (i == (threads - 1) ? -1 : +1), w, depth)));
+        Parallel.For(0, threads, i => results.Add(Process(Transparent, filters, buffers, 1, (int)(i * chunks) + 1, w - 1, (int)((i + 1) * chunks) + (i == (threads - 1) ? -1 : +1), w, depth)));
       }
       catch (Exception e)
       {
@@ -85,8 +85,9 @@ namespace Greenhouse.Models
       }
 
       ScanlineVerticalLines(
-        buffers[BufferIdx.EdgeFilter].AsSpan(buffers[BufferIdx.EdgeFilter].GetLowerBound(0), buffers[BufferIdx.EdgeFilter].Length),
-        buffers[BufferIdx.LongestEdgeOverlay].AsSpan(buffers[BufferIdx.LongestEdgeOverlay].GetLowerBound(0), buffers[BufferIdx.LongestEdgeOverlay].Length),
+        edgeBuffer: buffers[BufferIdx.EdgeFilter].AsSpan(buffers[BufferIdx.EdgeFilter].GetLowerBound(0), buffers[BufferIdx.EdgeFilter].Length),
+        overlayBuffer: buffers[BufferIdx.LongestEdgeOverlay].AsSpan(buffers[BufferIdx.LongestEdgeOverlay].GetLowerBound(0), buffers[BufferIdx.LongestEdgeOverlay].Length),
+        avgWindow: filters.ScanlineInterpolationWidth,
         w,
         h,
         depth);
@@ -107,13 +108,13 @@ namespace Greenhouse.Models
         LeafBitmap = bitmaps[BufferIdx.Leaf],
         EarthBitmap = bitmaps[BufferIdx.Earth],
         EdgeBitmap = bitmaps[BufferIdx.EdgeFilter],
-        HighpassBitmap = bitmaps[BufferIdx.Highpass],
+        HighpassBitmap = bitmaps[BufferIdx.Passfilter],
         BlurBitmap = bitmaps[BufferIdx.Blur],
         EdgeOverlayBitmap = bitmaps[BufferIdx.LongestEdgeOverlay]
       };
     }
-
-    private static Histogram Process(RGB transparentColor, FilterThesholds thresholds, byte[][] buffers, int x, int y, int endx, int endy, int width, int depth)
+    
+    private static Histogram Process(RGB transparentColor, FitlerValues filterValues, byte[][] buffers, int x, int y, int endx, int endy, int width, int depth)
     {
       var h = new Histogram();
       var epsilon = 1;
@@ -156,7 +157,7 @@ namespace Greenhouse.Models
 
           // Theta is 0 for vertical edges, but real world numbers...fine tune.
           var theta = Math.Atan2(pixel_y, pixel_x);
-          if (theta > -0.19 && theta < 0.19)
+          if (theta> -filterValues.ThetaTheshold && theta < filterValues.ThetaTheshold)
           {
             var mag = Math.Ceiling(Math.Sqrt((pixel_x * pixel_x) + (pixel_y * pixel_y)));
             byte val = 0;
@@ -181,8 +182,8 @@ namespace Greenhouse.Models
 
           var redRatio = ((r + epsilon) / ((Math.Max(g, b) + epsilon)));
           var greenRatio = ((g + epsilon) / ((Math.Max(r, b) + epsilon)));
-          var redDominant = redRatio > thresholds.RedMinRatio;
-          var greenDominant = greenRatio > thresholds.GreenMinRatio;
+          var redDominant = redRatio > filterValues.RedMinRatio;
+          var greenDominant = greenRatio > filterValues.GreenMinRatio;
 
           // Set other color only blue
           if (!redDominant)
@@ -232,24 +233,24 @@ namespace Greenhouse.Models
 
       // Don't overwrite, copy: Edges -> Blur
       Array.Copy(buffers[BufferIdx.EdgeFilter], startOffset, buffers[BufferIdx.Blur], startOffset, chunkLength);
-      VerticalBlur(buffers[BufferIdx.Blur], width, depth, x, (y == 0 ? 20 : y), endx, endy);
+      VerticalBlur(buffer: buffers[BufferIdx.Blur], blurRounds: filterValues.BlurRounds, width, depth, x, (y == 0 ? 20 : y), endx, endy);
 
       // Don't overwrite blur filter, copy: Blur -> Highpass
-      Array.Copy(buffers[BufferIdx.Blur], startOffset, buffers[BufferIdx.Highpass], startOffset, chunkLength);
+      Array.Copy(buffers[BufferIdx.Blur], startOffset, buffers[BufferIdx.Passfilter], startOffset, chunkLength);
 
-      HighpassFilter(buffers[BufferIdx.Highpass], width, depth, x, y, endx, endy);
+      Lowpass(buffer: buffers[BufferIdx.Passfilter], whiteThreshold: filterValues.WhiteThreshold, width, depth, x, y, endx, endy);
 
       return h;
     }
 
     #region filters
-    private static void VerticalBlur(byte[] blurBuffer, int width, int depth, int x, int y, int endx, int endy)
+    private static void VerticalBlur(byte[] buffer, int blurRounds, int width, int depth, int x, int y, int endx, int endy)
     {
-      for (int z = 0; z < 70; z++)
+      for (int z = 0; z < blurRounds; z++)
       {
         // You cannot overwrite the same image while you're filtering it, create copy
-        var edgeCopy = new byte[blurBuffer.Length];
-        blurBuffer.CopyTo(edgeCopy, 0);
+        var edgeCopy = new byte[buffer.Length];
+        buffer.CopyTo(edgeCopy, 0);
 
         double idx(int pos_x, int pos_y)
         {
@@ -265,26 +266,29 @@ namespace Greenhouse.Models
             var offset = ((j * width) + i) * depth;
 
             byte blur = (byte)((idx(i, j - 1) + idx(i, j) + idx(i, j + 1)) / 3.0);
-            blurBuffer[offset] = blur;
-            blurBuffer[offset + 1] = blur;
-            blurBuffer[offset + 2] = blur;
+            buffer[offset] = blur;
+            buffer[offset + 1] = blur;
+            buffer[offset + 2] = blur;
           }
         }
       }
     }
 
-    private static void HighpassFilter(byte[] highpassBuffer, int width, int depth, int x, int y, int endx, int endy)
+    private static void Lowpass(byte[] buffer, int whiteThreshold, int width, int depth, int x, int y, int endx, int endy)
     {
-      // Highpass filter
       for (int i = x; i < endx; i++)
       {
         for (int j = y; j < endy; j++)
         {
           var offset = ((j * width) + i) * depth;
-          byte col = highpassBuffer[offset] < 150 ? (byte)0 : (byte)255;
-          highpassBuffer[offset] = col;
-          highpassBuffer[offset + 1] = col;
-          highpassBuffer[offset + 2] = col;
+          byte col = buffer[offset];
+          if (buffer[offset] > whiteThreshold)
+          {
+            col = 255;
+          }
+          buffer[offset] = col;
+          buffer[offset + 1] = col;
+          buffer[offset + 2] = col;
         }
       }
     }
@@ -298,58 +302,58 @@ namespace Greenhouse.Models
     /// <param name="w"></param>
     /// <param name="h"></param>
     /// <param name="depth"></param>
-    private static void ScanlineVerticalLines(Span<byte> edgeBuffer, Span<byte> overlayBuffer, int w, int h, int depth)
+    private static void ScanlineVerticalLines(Span<byte> edgeBuffer, Span<byte> overlayBuffer, int avgWindow, int w, int h, int depth)
     {
       var vCount = new int[w, h];
-      for (int y = 5; y < h - 5; y++)
+      int edge = 5;
+      for (int y = edge; y < h - edge; y++)
       {
-        for (int x = 5; x < w - 5; x++)
+        for (int x = avgWindow + edge; x < w - avgWindow - edge; x++)
         {
           int offset = ((y * w) + x) * depth;
           double sum = 0d;
 
           // Horizontal average / interpolation,accepts slight slopes
-          for (int k = -3; k <= 3; k++)
+          for (int k = -avgWindow; k <= avgWindow; k++)
           {
             sum += edgeBuffer[offset + (k * depth)];
           }
-          double avg = sum / 7.0d;
+          double avg = sum / (2 * avgWindow + 1);
 
           // Lowpass filter: If not really white then count it
           vCount[x, y] = 0;
-          if (avg < 120)
+          if (avg < 230)
           {
             vCount[x, y] = 1;
           }
         }
       }
 
-      var maxCol = new ColCounter { X = 0, Y = 0, Counter = 0 };
-      // Verticall sum of continous vertical column
+      var maxCol = new ColCounter { X = 0, Y = 0, Length = 0 };
+      // Column-wise longest line
       for (int x = 0; x < w; x++)
       {
         int colSum = 0;
-        for (int y = 5; y < h - 5; y++)
+        for (int y = 0; y < h; y++)
         {
-          int offset = ((y * w) + x) * depth;
           if (vCount[x, y] == 1)
           {
             colSum++;
           }
           else
           {
-            if (maxCol.Counter < colSum)
+            if (maxCol.Length < colSum)
             {
               maxCol.X = x;
-              maxCol.Y = y;
-              maxCol.Counter = colSum;
+              maxCol.Y = y - colSum;
+              maxCol.Length = colSum;
             }
           }
         }
       }
 
-      // Vertical line
-      for (int y = maxCol.Y - maxCol.Counter; y < maxCol.Y; y++)
+      // Mark on image the longest vertical line
+      for (int y = maxCol.Y; y < maxCol.Length; y++)
       {
         // Like thickness
         for (int x = maxCol.X - 2; x < maxCol.X + 2; x++)
