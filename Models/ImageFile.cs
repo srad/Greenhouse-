@@ -365,6 +365,18 @@ namespace Greenhouse.Models
           overlayBuffer[offset + 2] = 255;
           overlayBuffer[offset + 3] = 40;
         }
+        // Horizontal line at the end of the line
+        if (y > (maxCol.Length-6))
+        {
+          for (int x = 0; x < w; x++)
+          {
+            var offset = ((y * w) + x) * depth;
+            overlayBuffer[offset] = (byte)(edgeBuffer[offset] / 2);
+            overlayBuffer[offset + 1] = (byte)(edgeBuffer[offset + 1] / 2);
+            overlayBuffer[offset + 2] = 255;
+            overlayBuffer[offset + 3] = 40;
+          }
+        }
       }
     }
     #endregion
