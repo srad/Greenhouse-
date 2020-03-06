@@ -4,6 +4,12 @@ This software is a tool used within a system engineering course. The aim of the 
 
 One very small step during that journey was image processing to gather real world probability distributions. The specific system  was designed for an automated greenhouse yield estimation system for tomato plants - only based on camera pictures taken from the plants.
 
-As part of the computational pipeline this C# WPF client does firstly image segmentation and create from these information the covered leaf area of a plant per ground unit. Secondly, it gathers each segment's color distributions. This distributions can then be used either for simulation to generate realistic models or to increase the system's robustness.
+As part of the computational pipeline this C# WPF client does:
 
-![](https://raw.githubusercontent.com/srad/GreenhousePP/master/Docs/Images/ui1.jpg)
+1. Image segmentation and create from these information the covered leaf area of a plant per ground unit.
+1. It gathers each segment's color distributions. This distributions can then be used either for simulation to generate realistic models or to increase the system's robustness.
+1. Applies a image processing pipeline to find the longest vertical edge - which here is the plant's pole and is used for height estimation.
+
+![](https://raw.githubusercontent.com/srad/GreenhousePP/master/Docs/Images/ui2.jpg)
+
+This pipeline has (as visible) paramters which are not finetubed yet through any learning, but would be the next step
