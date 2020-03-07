@@ -64,7 +64,7 @@
         CanContentScroll="True" 
         VerticalScrollBarVisibility="Auto" 
         HorizontalScrollBarVisibility="Disabled">
-        <ListView x:Name="TvBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="DarkGray" Width="180" Margin="0">
+        <ListView x:Name="ThumbList" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="DarkGray" Width="180" Margin="0">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
               <StackPanel Orientation="Vertical"></StackPanel>
@@ -99,7 +99,7 @@
 
         <Grid Grid.Column="0" Grid.Row="0">
           <Border BorderBrush="Gray" BorderThickness="1" Margin="2">
-            <Image x:Name="imgHistR" Source="./Resources/leaf.png" Margin="0"/>
+            <Image x:Name="imgHistR" Source="{Binding HistogramRed}" Margin="0" MouseDown="ViewFile" Tag="{Binding HistogramRedFile}"/>
           </Border>
         </Grid>
 
@@ -122,47 +122,44 @@
               <ColumnDefinition Width="40"/>
             </Grid.ColumnDefinitions>
 
-            <!--
-          <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="0">
-            <Image x:Name="SelectedImageArea" Source="./Resources/leaf.png" Stretch="Uniform"/>
-          </Border>
-          <Label Content="Selection" Grid.Row="1" Grid.Column="0" FontSize="10" Margin="0" Padding="2" HorizontalAlignment="Center"/>
-          -->
-
             <Label Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="8" Content="Pipeline (left to right)" Margin="1" FontSize="14" Background="Gold" HorizontalContentAlignment="Center"/>
 
             <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="0" Grid.ColumnSpan="2">
-              <Image x:Name="ImageEdge" MouseDown="ImageEdge_MouseDown" Source="./Resources/leaf.png"/>
+              <Image x:Name="ImageEdge" Source="{Binding EdgeImage}" MouseDown="ViewFile" Tag="{Binding EdgeFile}"/>
             </Border>
-            <Slider x:Name="FilterValTheta" Grid.Row="1" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.01" IsSnapToTickEnabled="True" />
+            <Slider x:Name="FilterValTheta" Grid.Row="1" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.01" IsSnapToTickEnabled="True" Value="{Binding FilterValTheta}" />
             <Label Grid.Row="1" Grid.Column="1" Content="{Binding Value, ElementName=FilterValTheta}"/>
+            
             <Border BorderBrush="Gray" BorderThickness="1" Margin="2"  VerticalAlignment="Center" Grid.Row="2" Grid.Column="0"  Grid.ColumnSpan="2">
               <Label Content="Edge-Theta" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
             </Border>
 
             <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="2" Grid.ColumnSpan="2">
-              <Image x:Name="ImageBlur" MouseDown="ImageBlur_MouseDown" Source="./Resources/leaf.png"/>
+              <Image x:Name="ImageBlur" Source="{Binding BlurImage}" MouseDown="ViewFile" Tag="{Binding BlurFile}"/>
             </Border>
-            <Slider x:Name="FilterValBlurRounds" Grid.Row="1" Grid.Column="2" Minimum="0" Maximum="200" TickFrequency="1" IsSnapToTickEnabled="True" />
+            <Slider x:Name="FilterValBlurRounds" Grid.Row="1" Grid.Column="2" Minimum="0" Maximum="200" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding FilterValBlurRounds}" />
             <Label Grid.Row="1" Grid.Column="3" Content="{Binding Value, ElementName=FilterValBlurRounds}"/>
+            
             <Border BorderBrush="Gray" BorderThickness="1" Margin="2"  VerticalAlignment="Center" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2">
               <Label Content="V-Blur" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
             </Border>
 
             <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="4" Grid.ColumnSpan="2">
-              <Image x:Name="ImageHighpass" MouseDown="ImageHighpass_MouseDown" Source="./Resources/leaf.png"/>
+              <Image x:Name="ImageHighpass" Source="{Binding PassImage}" MouseDown="ViewFile" Tag="{Binding PassFile}"/>
             </Border>
-            <Slider x:Name="FitlerValPassfilter" Grid.Row="1" Grid.Column="4" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" />
+            <Slider x:Name="FitlerValPassfilter" Grid.Row="1" Grid.Column="4" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding FitlerValPassfilter}" />
             <Label Grid.Row="1" Grid.Column="5" Content="{Binding Value, ElementName=FitlerValPassfilter}"/>
+            
             <Border BorderBrush="Gray" BorderThickness="1" Margin="2"  VerticalAlignment="Center" Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="2">
               <Label Content="Filter low" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
             </Border>
 
             <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Column="6" Grid.ColumnSpan="2">
-              <Image x:Name="ImageEdgeOverlay" MouseDown="ImageEdgeOverlay_MouseDown" Source="./Resources/leaf.png"/>
+              <Image x:Name="ImageEdgeOverlay" Source="{Binding EdgeOverlayImage}" MouseDown="ViewFile" Tag="{Binding EdgeOverlayFile}"/>
             </Border>
-            <Slider x:Name="FilterValScanline" Grid.Row="1" Grid.Column="6" Minimum="0" Maximum="50" TickFrequency="1" IsSnapToTickEnabled="True" />
+            <Slider x:Name="FilterValScanline" Grid.Row="1" Grid.Column="6" Minimum="0" Maximum="50" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding FilterValScanline}" />
             <Label Grid.Row="1" Grid.Column="7" Content="{Binding Value, ElementName=FilterValScanline}"/>
+            
             <Border BorderBrush="Gray" BorderThickness="1" Margin="2" Grid.Row="2" Grid.Column="6" Grid.ColumnSpan="2" VerticalAlignment="Center">
               <Label Content="Scanline Window" FontSize="12" Margin="0" Padding="2" HorizontalAlignment="Center"/>
             </Border>
@@ -180,12 +177,12 @@
         </Grid>
         <Grid Grid.Column="1" Grid.Row="0">
           <Border BorderBrush="Gray" BorderThickness="1" Margin="2">
-            <Image x:Name="imgHistG" Source="./Resources/leaf.png" Margin="0"/>
+            <Image x:Name="imgHistG" Source="{Binding HistogramGreen}" Margin="0" MouseDown="ViewFile" Tag="{Binding HistogramGreenFile}"/>
           </Border>
         </Grid>
         <Grid Grid.Column="2" Grid.Row="0">
           <Border BorderBrush="Gray" BorderThickness="1" Margin="2">
-            <Image x:Name="imgHistB" Source="./Resources/leaf.png" Margin="0"/>
+            <Image x:Name="imgHistB" Source="{Binding HistogramBlue}" Margin="0" MouseDown="ViewFile" Tag="{Binding HistogramBlueFile}"/>
           </Border>
         </Grid>
       </Grid>
@@ -209,16 +206,16 @@
           <RowDefinition Height="*"/>
           <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <Image Grid.Column="0" Grid.Row="0"  x:Name="filterRed" Source="./Resources/leaf.png" Margin="5" />
-        <Image Grid.Column="1" Grid.Row="0"  x:Name="segmentedEarth" Source="./Resources/leaf.png" Margin="5" />
+
+        <Image Grid.Column="0" Grid.Row="0"  x:Name="filterRed" Source="{Binding FilteredRed}" Margin="5" MouseDown="ViewFile" Tag="{Binding FilteredRedFile}" />
         <Label Grid.Row="1" Grid.Column="0" Content="Clustered Non green-leaf" FontSize="13" HorizontalAlignment="Center"/>
+
+        <Image Grid.Column="1" Grid.Row="0"  x:Name="segmentedEarth" Source="{Binding Earth}" Margin="5" MouseDown="ViewFile" Tag="{Binding EarthFile}"/>
         <Label Grid.Row="1" Grid.Column="1" Content="Segmented non green-leaf" FontSize="13" HorizontalAlignment="Center"/>
+     
       </Grid>
-      <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" x:Name="RedThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
-      <Label Grid.Row="1" Grid.Column="1" Content="{Binding Value, ElementName=RedThreshold}" FontSize="13"/>
-      <Button Grid.Column="2" Grid.Row="2" Click="OpenRedFiltered">
-        <Image Source="./Resources/Button/photo.png"/>
-      </Button>
+      <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" x:Name="RedThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
+      <Label Grid.Row="2" Grid.Column="1" Content="{Binding Value, ElementName=RedThreshold}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"/>
     </Grid>
     <Grid Margin="0,5,0,0" Grid.Row="1" Grid.Column="1" Background="FloralWhite">
       <Grid>
@@ -227,7 +224,7 @@
           <ColumnDefinition Width="50"/>
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0" Grid.ColumnSpan="2">
-          <Image Margin="5" x:Name="imgInput" Source="./Resources/leaf.png"/>
+          <Image Margin="5" x:Name="imgInput" Source="{Binding OriginalImage}" MouseDown="ViewFile" Tag="{Binding OriginalImageFile}"/>
         </Grid>
       </Grid>
     </Grid>
@@ -249,13 +246,15 @@
           <RowDefinition Height="*"/>
           <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <Image Grid.Column="1" Grid.Row="0"  x:Name="segmentedLeaf" Source="./Resources/leaf.png" Margin="5" />
+
+        <Image Grid.Row="0" Grid.Column="0" x:Name="segmentedLeaf" Source="{Binding FilteredGreen}" Margin="5" MouseDown="ViewFile" Tag="{Binding FilteredGreenFile}"/>
         <Label Grid.Row="1" Grid.Column="0" Content="Clustered green-leaf" FontSize="13" HorizontalAlignment="Center"/>
+
+        <Image Grid.Row="0" Grid.Column="1" x:Name="filterGreen" Source="{Binding Leaf}" Margin="5,5,4.6,5" MouseDown="ViewFile" Tag="{Binding LeafFile}"/>
         <Label Grid.Row="1" Grid.Column="1" Content="Segmented green-leaf" FontSize="13" HorizontalAlignment="Center"/>
-        <Image Grid.Column="0" Grid.Row="0"  x:Name="filterGreen" Source="./Resources/leaf.png" Margin="5,5,4.6,5" />
       </Grid>
       <Slider HorizontalAlignment="Center" Grid.Row="0" Grid.Column="2" x:Name="GreenThreshold" Minimum="90" Maximum="100" TickFrequency="0.01" Value="90" Orientation="Vertical" VerticalAlignment="Stretch"/>
-      <Label Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" Content="{Binding Value, ElementName=GreenThreshold}" FontSize="13"/>
+      <Label Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding Value, ElementName=GreenThreshold}" FontSize="13"/>
      </Grid>
   </Grid>
 </Window>

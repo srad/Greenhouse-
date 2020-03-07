@@ -21,7 +21,7 @@ namespace Greenhouse.Vision
     ///   2. Creates a new image with filtered red colors
     /// </summary>
     /// <returns></returns>
-    public FilterResult Start(FitlerValues thresholds)
+    public FilterResult Start(FilterValues thresholds)
     {
       var filterResult = ImageFile.Original.Filter(thresholds);
 

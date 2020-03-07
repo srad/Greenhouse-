@@ -12,16 +12,16 @@ using System.Windows.Media.Imaging;
 
 namespace Greenhouse
 {
-  /// <summary>
-  /// Interaction logic for MainWindow.xaml
-  /// </summary>
   public partial class MainWindow : Window
   {
     private ImageProcessor ImageProcessor;
     private ImageManager CurrentFile;
+
     private readonly ImageListView ImageListView = new ImageListView();
+    private readonly MainWindowViewModel MainWindowViewModel = new MainWindowViewModel();
+
     private bool ImageLoaded = false;
-    private readonly FitlerValues FilterValues = new FitlerValues();
+    private readonly FilterValues FilterValues = new FilterValues();
 
     public MainWindow()
     {
@@ -37,12 +37,10 @@ namespace Greenhouse
         }
       }
 
-      TvBox.ItemsSource = ImageListView;
+      ThumbList.ItemsSource = ImageListView;
+      DataContext = MainWindowViewModel;
 
-      FilterValBlurRounds.Value = FilterValues.BlurRounds;
-      FilterValTheta.Value = FilterValues.ThetaTheshold;
-      FitlerValPassfilter.Value = FilterValues.WhiteThreshold;
-      FilterValScanline.Value = FilterValues.ScanlineInterpolationWidth;
+      MainWindowViewModel.FilterValues = FilterValues;
     }
 
     private void btnOpenFile_Click(object sender, RoutedEventArgs e)
@@ -71,55 +69,12 @@ namespace Greenhouse
       }
     }
 
-    [System.Runtime.InteropServices.DllImport("Shlwapi.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
-    public static extern long StrFormatByteSize(
-        long fileSize
-        , [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPTStr)] System.Text.StringBuilder buffer
-        , int bufferSize);
-
-
-    /// <summary>
-    /// Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size.
-    /// </summary>
-    /// <param name="filelength">The numeric value to be converted.</param>
-    /// <returns>the converted string</returns>
-    public static string StrFormatByteSize(long filesize)
-    {
-      var sb = new System.Text.StringBuilder(11);
-      StrFormatByteSize(filesize, sb, sb.Capacity);
-      return sb.ToString();
-    }
-
     private void ProcessFile()
     {
       imgInput.Source = CurrentFile.Original.BitmapImage.Value;
       ImageProcessor = new ImageProcessor(CurrentFile);
-
-      // Pass filter values
-      FilterValues.Green = GreenThreshold.Value;
-      FilterValues.Red = RedThreshold.Value;
-      FilterValues.BlurRounds = (int)FilterValBlurRounds.Value;
-      FilterValues.ThetaTheshold = FilterValTheta.Value;
-      FilterValues.WhiteThreshold = (byte)FitlerValPassfilter.Value;
-      FilterValues.ScanlineInterpolationWidth = (int)FilterValScanline.Value;
-
       ImageProcessor.Start(FilterValues);
-
-      imgHistR.Source = CurrentFile.HistR.BitmapImage.Value;
-      imgHistG.Source = CurrentFile.HistG.BitmapImage.Value;
-      imgHistB.Source = CurrentFile.HistB.BitmapImage.Value;
-
-      filterRed.Source = CurrentFile.FilteredRed.BitmapImage.Value;
-      filterGreen.Source = CurrentFile.FilteredGreen.BitmapImage.Value;
-      segmentedEarth.Source = CurrentFile.Earth.BitmapImage.Value;
-      segmentedLeaf.Source = CurrentFile.Leaf.BitmapImage.Value;
-
-      ImageEdge.Source = CurrentFile.Edge.BitmapImage.Value;
-      ImageEdgeOverlay.Source = CurrentFile.EdgeOverlay.BitmapImage.Value;
-      ImageBlur.Source = CurrentFile.Blur.BitmapImage.Value;
-      ImageHighpass.Source = CurrentFile.Highpass.BitmapImage.Value;
-
-      OriginalImageLabel.Content = $"Original Image: {(int)CurrentFile.Original.BitmapImage.Value.Width}x{(int)CurrentFile.Original.BitmapImage.Value.Height} ({StrFormatByteSize(new FileInfo(CurrentFile.Original.Path).Length)})";
+      MainWindowViewModel.File = CurrentFile;
       ImageLoaded = true;
     }
 
@@ -129,6 +84,24 @@ namespace Greenhouse
       var file = (string)image.Tag;
       CurrentFile = new ImageManager(file);
       ProcessFile();
+    }
+
+    private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)
+    {
+      Process.Start(ImageManager.BasePath);
+    }
+
+    private void BtnDeleteImage_Click(object sender, RoutedEventArgs e)
+    {
+      var messageBoxResult = MessageBox.Show("Are you sure?", "Delete Confirmation", System.Windows.MessageBoxButton.YesNo);
+      if (messageBoxResult == MessageBoxResult.Yes)
+      {
+        var image = sender as System.Windows.Controls.Button;
+        var file = (string)image.Tag;
+        var paths = new ImageManager(file);
+        ImageListView.RemoveItem(file);
+        paths.Delete();
+      }
     }
 
     void OpenFile(string file)
@@ -142,97 +115,18 @@ namespace Greenhouse
       photoViewer.Start();
     }
 
-    private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)
+    public void ViewFile(object sender, EventArgs e)
     {
-      Process.Start(ImageManager.BasePath);
-    }
-
-    private void BtnDeleteImage_Click(object sender, RoutedEventArgs e)
-    {
-      var messageBoxResult = System.Windows.MessageBox.Show("Are you sure?", "Delete Confirmation", System.Windows.MessageBoxButton.YesNo);
-      if (messageBoxResult == MessageBoxResult.Yes)
-      {
-        var image = sender as System.Windows.Controls.Button;
-        var file = (string)image.Tag;
-        var paths = new ImageManager(file);
-        ImageListView.RemoveItem(file);
-        paths.Delete();
-      }
-    }
-
-    private void OpenGreenFiltered(object sender, RoutedEventArgs e)
-    {
-      OpenFile(CurrentFile.FilteredGreen.Path);
-    }
-
-    private void OpenRedFiltered(object sender, RoutedEventArgs e)
-    {
-      OpenFile(CurrentFile.FilteredRed.Path);
-    }
-
-    private static void Rect(GridPos pos, int width, int height, System.Windows.Controls.Canvas cv)
-    {
-      if (pos.PixelX < 0 || pos.PixelY < 0)
+      if (!ImageLoaded)
       {
         return;
       }
-      var b = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(80, 255, 0, 255));
-      var rect = new System.Windows.Shapes.Rectangle()
+      var element = sender as FrameworkElement;
+      var file = (string)element.Tag;
+      if (file != null)
       {
-        Width = width,
-        Height = height,
-        Stroke = b,
-        StrokeThickness = width / 2
-      };
-
-      rect.Tag = pos;
-      cv.Children.Add(rect);
-
-      rect.SetValue(System.Windows.Controls.Canvas.LeftProperty, (double)pos.PixelX);
-      rect.SetValue(System.Windows.Controls.Canvas.TopProperty, (double)pos.PixelY);
-    }
-
-    public static void CopyRegionIntoImage(System.Drawing.Bitmap srcBitmap, System.Drawing.Rectangle srcRegion, ref System.Drawing.Bitmap destBitmap, System.Drawing.Rectangle destRegion)
-    {
-      using (System.Drawing.Graphics grD = System.Drawing.Graphics.FromImage(destBitmap))
-      {
-        grD.DrawImage(srcBitmap, destRegion, srcRegion, System.Drawing.GraphicsUnit.Pixel);
+        OpenFile(file);
       }
-    }
-
-    //If you get 'dllimport unknown'-, then add 'using System.Runtime.InteropServices;'
-    [System.Runtime.InteropServices.DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
-    [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
-    public static extern bool DeleteObject([System.Runtime.InteropServices.In] IntPtr hObject);
-
-    public System.Windows.Media.ImageSource ImageSourceFromBitmap(System.Drawing.Bitmap bmp)
-    {
-      var handle = bmp.GetHbitmap();
-      try
-      {
-        return System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-      }
-      finally { DeleteObject(handle); }
-    }
-
-    private void ImageEdge_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-      OpenFile(CurrentFile.Edge.Path);
-    }
-
-    private void ImageEdgeOverlay_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-      OpenFile(CurrentFile.EdgeOverlay.Path);
-    }
-
-    private void ImageBlur_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-      OpenFile(CurrentFile.Blur.Path);
-    }
-
-    private void ImageHighpass_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-      OpenFile(CurrentFile.Highpass.Path);
     }
   }
 }

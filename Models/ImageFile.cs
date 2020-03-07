@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 
 namespace Greenhouse.Models
 {
-  public struct ColCounter
+  struct ColCounter
   {
     public int X;
     public int Y;
@@ -38,7 +38,7 @@ namespace Greenhouse.Models
       File.Delete(Path);
     }
 
-    public FilterResult Filter(FitlerValues filters)
+    public FilterResult Filter(FilterValues filters)
     {
       var results = new List<Histogram>();
       var count = 8;
@@ -114,7 +114,7 @@ namespace Greenhouse.Models
       };
     }
     
-    private static Histogram Process(RGB transparentColor, FitlerValues filterValues, byte[][] buffers, int x, int y, int endx, int endy, int width, int depth)
+    private static Histogram Process(RGB transparentColor, FilterValues filterValues, byte[][] buffers, int x, int y, int endx, int endy, int width, int depth)
     {
       var h = new Histogram();
       var epsilon = 1;

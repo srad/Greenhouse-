@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Greenhouse.ViewModels
 {
-  class ImageListView : ObservableCollection<ImageListViewItem>
+  public class ImageListView : ObservableCollection<ImageListViewItem>
   {
     public void AddImage(string file)
     {

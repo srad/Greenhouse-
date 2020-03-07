@@ -2,7 +2,7 @@
 
 namespace Greenhouse.Models
 {
-  public class FitlerValues
+  public class FilterValues
   {
     public double Red { get; set; }
     public double Green { get; set; }
@@ -13,7 +13,7 @@ namespace Greenhouse.Models
     public int BlurRounds { get; set; } = 100;
     public int ScanlineInterpolationWidth { get; set; } = 6;
 
-    public FitlerValues(double red = 10, double green = 10)
+    public FilterValues(double red = 10, double green = 10)
     {
       if (red > 100.0 || green > 100.0 || red < 0.0 || green < 0.0)
       {

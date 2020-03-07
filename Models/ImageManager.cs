@@ -3,7 +3,6 @@ using System.IO;
 
 namespace Greenhouse.Models
 {
-
   public class ImageManager
   {
     public static string BasePath = AppDomain.CurrentDomain.BaseDirectory + @"Images\";

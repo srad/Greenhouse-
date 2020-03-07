@@ -71,20 +71,17 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </ApplicationDefinition>
     <Compile Include="Models\BufferIdx.cs" />
-    <Compile Include="Models\GridPos.cs" />
     <Compile Include="Models\FilterResult.cs" />
     <Compile Include="Models\FilterValues.cs" />
     <Compile Include="Models\ImageFile.cs" />
     <Compile Include="Models\ImageManager.cs" />
-    <Compile Include="Models\SizeInfo.cs" />
     <Compile Include="ViewModels\ImageListViewItem.cs" />
     <Compile Include="ViewModels\ImageListView.cs" />
-    <Compile Include="Vision\Kernel.cs" />
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="Vision\ImageHelper.cs" />
     <Compile Include="Vision\ImageProcessor.cs" />
     <Compile Include="Vision\Histogram.cs" />
     <Compile Include="Vision\RGB.cs" />
-    <Compile Include="Vision\RGBArray.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
