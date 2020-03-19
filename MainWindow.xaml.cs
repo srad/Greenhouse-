@@ -14,14 +14,11 @@ namespace Greenhouse
 {
   public partial class MainWindow : Window
   {
-    private ImageProcessor ImageProcessor;
-    private ImageManager CurrentFile;
-
     private readonly ImageListView ImageListView = new ImageListView();
     private readonly MainWindowViewModel MainWindowViewModel = new MainWindowViewModel();
 
+    private Pipeline Pipeline = new Pipeline();
     private bool ImageLoaded = false;
-    private readonly FilterValues FilterValues = new FilterValues();
 
     public MainWindow()
     {
@@ -40,7 +37,7 @@ namespace Greenhouse
       ThumbList.ItemsSource = ImageListView;
       DataContext = MainWindowViewModel;
 
-      MainWindowViewModel.FilterValues = FilterValues;
+      MainWindowViewModel.FilterValues = Pipeline.FilterValues;
     }
 
     private void btnOpenFile_Click(object sender, RoutedEventArgs e)
@@ -54,27 +51,18 @@ namespace Greenhouse
       {
         // Copy file to project
         var filePath = openFileDialog.FileName;
-        var randomFilename = Guid.NewGuid() + ".jpg";
-        CurrentFile = new ImageManager(randomFilename);
-        var targetFile = ImageManager.ImagePath + randomFilename;
-        var image = ImageHelper.Resize(filePath, 1024, 786);
-        image.Save(targetFile);
-
-        // Create Thumb
-        var thumb = ImageHelper.Resize(CurrentFile.Original.Path, 300, 200);
-        thumb.Save(CurrentFile.Thumb.Path);
-        ImageListView.AddImage(CurrentFile.Thumb.Path);
+        Pipeline = new Pipeline(filePath);
+        ImageListView.AddImage(Pipeline.ImageFile.Thumb.Path);
 
         ProcessFile();
       }
     }
 
-    private void ProcessFile()
+    private void ProcessFile(string file = null)
     {
-      imgInput.Source = CurrentFile.Original.BitmapImage.Value;
-      ImageProcessor = new ImageProcessor(CurrentFile);
-      ImageProcessor.Start(FilterValues);
-      MainWindowViewModel.File = CurrentFile;
+      Pipeline.Process(file);
+      imgInput.Source = Pipeline.ImageFile.Original.BitmapImage.Value;
+      MainWindowViewModel.File = Pipeline.ImageFile;
       ImageLoaded = true;
     }
 
@@ -82,8 +70,7 @@ namespace Greenhouse
     {
       var image = sender as System.Windows.Controls.Image;
       var file = (string)image.Tag;
-      CurrentFile = new ImageManager(file);
-      ProcessFile();
+      ProcessFile(file);
     }
 
     private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)

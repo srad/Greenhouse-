@@ -81,6 +81,7 @@
     <Compile Include="Vision\ImageHelper.cs" />
     <Compile Include="Vision\ImageProcessor.cs" />
     <Compile Include="Vision\Histogram.cs" />
+    <Compile Include="Vision\Pipeline.cs" />
     <Compile Include="Vision\RGB.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
