@@ -1,5 +1,7 @@
 # Greenhouse++
 
+An Web App in implemented in Vue can provide an web-based UI for this project, see: https://github.com/srad/GreenhousePlusPlus.App
+
 This project was developed as part the the course __System Engineering Meets Life Sciences__ at the Goethe University Frankfurt.
 
 The goal of the course was to design a system which combines System Engineering practices with Cognitive Systems to make predictions about system with uncertain behavior/probability distributions.
