@@ -1,6 +1,6 @@
 # Greenhouse++
 
-An Web App in implemented in Vue can provide an web-based UI for this project, see: https://github.com/srad/GreenhousePlusPlus.App
+## Overview
 
 This project was developed as part the the course __System Engineering Meets Life Sciences__ at the Goethe University Frankfurt.
 
@@ -14,10 +14,14 @@ One part of the design of the computational pipeline was
 1. Gather real world probability distributions
 1. Design a computational pipeline to implemnt this goal.
 
+## Implementation
+
 This Visual Studio project is split into mutiple C# projects as the names indicate.
 1. `Core` contains the Library which is build for .NET Core 3.x and .NET Framework 4.7.x
 1. `WebAPI` provides a .NET Core 3.x web API implementation to consume the library functionalities.
 1. `WPF` is an WPF Windows desktop application implementation in Visual C# 2019 which uses the same library as the `WebAPI`.
+
+## Algorithm
 
 As part of the computational pipeline the `Core` client does:
 1. Image segmentation and create from these information the covered leaf area of a plant per ground unit.
@@ -26,6 +30,16 @@ As part of the computational pipeline the `Core` client does:
 
 ![](https://raw.githubusercontent.com/srad/GreenhousePP/master/Docs/Images/ui3.jpg)
 
+## Platforms
+
+A web-app which is implemented in Vue can provide an web-based responsive UI for this project, see: https://github.com/srad/GreenhousePlusPlus.App
+Since the core is implemented in .NET Core it can run on Linux, MacOS and Windows.
+
+## License 
+
+MIT
+
 ## Todo
 
 The computational pipeline has (as visible) paramters which are not fine tuned yet. The next step would be to implement a learning cycle to fine-tune those parameters in order to approximate the optimal values.
+
