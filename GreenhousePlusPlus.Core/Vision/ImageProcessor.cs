@@ -127,10 +127,11 @@ namespace GreenhousePlusPlusCore.Vision
     private static Histogram SobelFilterAndSegmentation(in Image<Rgba32> srcImage, Image<Rgba32>[] images, FilterValues filterValues, FilterRect rect)
     {
       var h = new Histogram();
-      var epsilon = 1;
+      double epsilon = 1.0;
 
       for (int y = rect.y; y < rect.endy; y++)
       {
+        // The sobel operator needs adjacent rows and cols of a pixel
         var topSpan = srcImage.GetPixelRowSpan(y - 1);
         var rowSpan = srcImage.GetPixelRowSpan(y);
         var bottomSpan = srcImage.GetPixelRowSpan(y + 1);
@@ -186,8 +187,9 @@ namespace GreenhousePlusPlusCore.Vision
           h.RGBArray.G[g]++;
           h.RGBArray.B[b]++;
 
-          var redRatio = ((r + epsilon) / ((Math.Max(g, b) + epsilon)));
-          var greenRatio = ((g + epsilon) / ((Math.Max(r, b) + epsilon)));
+          // epsion prevents div by zero
+          double redRatio = (r + epsilon) / (Math.Max(g, b) + epsilon);
+          double greenRatio = (g + epsilon) / (Math.Max(r, b) + epsilon);
           var redDominant = redRatio > filterValues.RedMinRatio;
           var greenDominant = greenRatio > filterValues.GreenMinRatio;
 

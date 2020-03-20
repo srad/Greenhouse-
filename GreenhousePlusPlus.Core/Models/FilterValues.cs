@@ -13,16 +13,17 @@ namespace GreenhousePlusPlusCore.Models
     public int BlurRounds { get; set; } = 40;
     public int ScanlineInterpolationWidth { get; set; } = 0;
 
-    public FilterValues(double red = 10, double green = 10)
+    public FilterValues(double redThreshold = 100, double greenThreshold = 100)
     {
-      if (red > 100.0 || green > 100.0 || red < 0.0 || green < 0.0)
+      if (redThreshold > 100.0 || greenThreshold > 100.0 || redThreshold < 0.0 || greenThreshold < 0.0)
       {
-        throw new ArgumentException($"Invalid arguments for FilterThresholds({green}, {red})");
+        throw new ArgumentException($"Invalid arguments for FilterThresholds({greenThreshold}, {redThreshold})");
       }
-      this.Red = red;
-      this.Green = green;
-      this.RedMinRatio = Red / 100;
-      this.GreenMinRatio = Green / 100;
+      this.Red = redThreshold;
+      this.Green = greenThreshold;
+      // Percentage of the color
+      this.RedMinRatio = redThreshold / 100;
+      this.GreenMinRatio =greenThreshold / 100;
     }
   }
 }
