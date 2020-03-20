@@ -1,4 +1,7 @@
-﻿using System;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,16 +10,19 @@ namespace GreenhousePlusPlusCore.Models
 {
   public class ImageManager
   {
-    public static string BasePath = AppDomain.CurrentDomain.BaseDirectory + @"Images\";
-    public static string ImagePath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Original\";
-    public static string ThumbsPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Thumbs\";
-    public static string FilteredPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Filtered\";
-    public static string SegmentedPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Segmented\";
-    public static string HistPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Hist\";
-    public static string SelectionPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Selection\";
-    public static string KernelPath = AppDomain.CurrentDomain.BaseDirectory + @"Images\Kernels\";
+    public const string ImageDir = @"Images\";
 
-    public readonly string Filename;
+    private readonly string BaseDir;
+    public string BasePath { get => BaseDir + ImageDir; }
+    public string ImagePath { get => BaseDir + ImageDir + @"Original\"; }
+    public string ThumbsPath { get => BaseDir + ImageDir + @"Thumbs\"; }
+    public string FilteredPath { get => BaseDir + ImageDir + @"Filtered\"; }
+    public string SegmentedPath { get => BaseDir + ImageDir + @"Segmented\"; }
+    public string HistPath { get => BaseDir + ImageDir + @"Hist\"; }
+    public string SelectionPath { get => BaseDir + ImageDir + @"Selection\"; }
+    public string KernelPath { get => BaseDir + ImageDir + @"Kernels\"; }
+
+    private string _filename;
     public ImageFile Original;
     public ImageFile Thumb;
     public ImageFile FilteredGreen;
@@ -35,20 +41,58 @@ namespace GreenhousePlusPlusCore.Models
 
     public ImageFile Selection;
 
-    public ImageManager(string file)
+    private bool FileOpened = false;
+
+    public ImageManager() : this(AppDomain.CurrentDomain.BaseDirectory)
+    {}
+
+    public ImageManager(string baseDir)
     {
-      Filename = file;
+      this.BaseDir = baseDir;
+      Directory.CreateDirectory(BasePath);
+      Directory.CreateDirectory(ImagePath);
+      Directory.CreateDirectory(ThumbsPath);
+      Directory.CreateDirectory(FilteredPath);
+      Directory.CreateDirectory(HistPath);
+      Directory.CreateDirectory(SelectionPath);
+      Directory.CreateDirectory(SegmentedPath);
+      Directory.CreateDirectory(KernelPath);
+    }
 
-      Original = new ImageFile(ImagePath + file);
-      Thumb = new ImageFile(ThumbsPath + file);
+    public void Create(string srcFile)
+    {
+      var filename = Guid.NewGuid();
+      _filename = filename + ".jpg";
+      var destFile = ImagePath + _filename;
+      var thumbFile = ThumbsPath + _filename;
 
-      HistR = new ImageFile(HistPath + "r_" + file);
-      HistG = new ImageFile(HistPath + "g_" + file);
-      HistB = new ImageFile(HistPath + "b_" + file);
+      using (var image = Image.Load<Rgba32>(srcFile))
+      {
+        using (var target = image.Clone(x => x.Resize(0, 480)))
+        {
+          target.Save(destFile);
+        }
+        using (var thumb = image.Clone(x => x.Resize(0, 200)))
+        {
+          thumb.Save(thumbFile);
+        }
+      }
 
-      Selection = new ImageFile(SelectionPath + file);
+      Open(_filename);
+    }
 
-      var pngFilename = Path.GetFileNameWithoutExtension(file) + ".png";
+    public void Open(string filename)
+    {
+      Original = new ImageFile(ImagePath + filename);
+      Thumb = new ImageFile(ThumbsPath + filename);
+
+      HistR = new ImageFile(HistPath + "r_" + filename);
+      HistG = new ImageFile(HistPath + "g_" + filename);
+      HistB = new ImageFile(HistPath + "b_" + filename);
+
+      Selection = new ImageFile(SelectionPath + filename);
+
+      var pngFilename = Path.GetFileNameWithoutExtension(filename) + ".png";
 
       FilteredGreen = new ImageFile(FilteredPath + "green_" + pngFilename);
       FilteredRed = new ImageFile(FilteredPath + "red_" + pngFilename);
@@ -60,17 +104,10 @@ namespace GreenhousePlusPlusCore.Models
       Blur = new ImageFile(KernelPath + "blur_" + pngFilename);
       Pass = new ImageFile(KernelPath + "pass_" + pngFilename);
 
-      Directory.CreateDirectory(BasePath);
-      Directory.CreateDirectory(ImagePath);
-      Directory.CreateDirectory(ThumbsPath);
-      Directory.CreateDirectory(FilteredPath);
-      Directory.CreateDirectory(HistPath);
-      Directory.CreateDirectory(SelectionPath);
-      Directory.CreateDirectory(SegmentedPath);
-      Directory.CreateDirectory(KernelPath);
+      FileOpened = true;
     }
 
-    public static IEnumerable<string> GetFiles()
+    public IEnumerable<string> GetFiles()
     {
       if (Directory.Exists(BasePath))
       {
@@ -82,6 +119,10 @@ namespace GreenhousePlusPlusCore.Models
 
     public void Delete()
     {
+      if (!FileOpened || !File.Exists(Original.Path))
+      {
+        throw new FileNotFoundException("No file to delete");
+      }
       Original.Delete();
       Thumb.Delete();
       FilteredGreen.Delete();

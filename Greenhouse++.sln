@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GreenhousePlusPlus.Core", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenhousePlusPlus.WPF", "GreenhousePlusPlus.WPF\GreenhousePlusPlus.WPF.csproj", "{9E72AEC4-4A5E-4020-935A-02892282A763}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenhousePlusPlus.WebAPI", "GreenhousePlusPlus.WebAPI\GreenhousePlusPlus.WebAPI.csproj", "{C9399C26-DFE4-4362-8609-C9BE65ADC471}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{9E72AEC4-4A5E-4020-935A-02892282A763}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E72AEC4-4A5E-4020-935A-02892282A763}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E72AEC4-4A5E-4020-935A-02892282A763}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9399C26-DFE4-4362-8609-C9BE65ADC471}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9399C26-DFE4-4362-8609-C9BE65ADC471}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9399C26-DFE4-4362-8609-C9BE65ADC471}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9399C26-DFE4-4362-8609-C9BE65ADC471}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

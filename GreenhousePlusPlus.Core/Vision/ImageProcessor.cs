@@ -26,7 +26,7 @@ namespace GreenhousePlusPlusCore.Vision
     ///   2. Creates a new image with filtered red colors
     /// </summary>
     /// <returns></returns>
-    public FilterResult Start(FilterValues thresholds)
+    public ImageProcessResult Start(FilterValues thresholds)
     {
       var filterResult = Filter(thresholds, ImageFile.Original.Path);
 
@@ -43,7 +43,21 @@ namespace GreenhousePlusPlusCore.Vision
       filterResult.Histogram.HistogramG.Save(ImageFile.HistG.Path);
       filterResult.Histogram.HistogramB.Save(ImageFile.HistB.Path);
 
-      return filterResult;
+      return new ImageProcessResult
+      {
+        new FilterFileInfo { Path = ImageFile.Original.Path, Element = "original" },
+        new FilterFileInfo { Path = ImageFile.Blur.Path, Element = "blur" },
+        new FilterFileInfo { Path = ImageFile.Earth.Path, Element="earth" },
+        new FilterFileInfo { Path = ImageFile.Edge.Path, Element="edge" },
+        new FilterFileInfo { Path = ImageFile.FilteredGreen.Path, Element="green" },
+        new FilterFileInfo { Path = ImageFile.FilteredRed.Path, Element="red" },
+        new FilterFileInfo { Path = ImageFile.PlantTip.Path, Element="tip" },
+        new FilterFileInfo { Path = ImageFile.Leaf.Path, Element="leaf" },
+        new FilterFileInfo { Path = ImageFile.HistR.Path, Element="hist-red" },
+        new FilterFileInfo { Path = ImageFile.HistG.Path, Element="hist-green" },
+        new FilterFileInfo { Path = ImageFile.HistB.Path, Element="hist-blue" },
+        new FilterFileInfo { Path = ImageFile.Pass.Path, Element="pass" }
+      };
     }
 
     public static FilterResult Filter(FilterValues filters, string path)

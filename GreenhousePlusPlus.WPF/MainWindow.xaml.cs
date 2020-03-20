@@ -14,14 +14,14 @@ namespace GreenhousePlusPlusCore
     private readonly ImageListView ImageListView = new ImageListView();
     private readonly MainWindowViewModel MainWindowViewModel = new MainWindowViewModel();
 
-    private Pipeline Pipeline = new Pipeline();
+    private readonly Pipeline Pipeline = new Pipeline();
     private bool ImageLoaded = false;
 
     public MainWindow()
     {
       InitializeComponent();
 
-      var images = ImageManager.GetFiles();
+      var images = new ImageManager().GetFiles();
       foreach (var image in images)
       {
         ImageListView.AddImage(image);
@@ -45,8 +45,8 @@ namespace GreenhousePlusPlusCore
         MainWindowViewModel.NotLoading = false;
         // Copy file to project
         var filePath = openFileDialog.FileName;
-        Pipeline = new Pipeline(filePath);
-        ImageListView.AddImage(Pipeline.ImageFile.Thumb.Path);
+        Pipeline.Create(filePath);
+        ImageListView.AddImage(Pipeline.ImageManager.Thumb.Path);
 
         ProcessFile();
         MainWindowViewModel.NotLoading = true;
@@ -57,8 +57,8 @@ namespace GreenhousePlusPlusCore
     {
       MainWindowViewModel.NotLoading = false;
       Pipeline.Process(file);
-      imgInput.Source = Greenhouse.Vision.ImageHelper.LoadBitmap(Pipeline.ImageFile.Original.Path);
-      MainWindowViewModel.File = Pipeline.ImageFile;
+      imgInput.Source = Greenhouse.Vision.ImageHelper.LoadBitmap(Pipeline.ImageManager.Original.Path);
+      MainWindowViewModel.File = Pipeline.ImageManager;
       ImageLoaded = true;
       MainWindowViewModel.NotLoading = true;
     }
@@ -72,7 +72,7 @@ namespace GreenhousePlusPlusCore
 
     private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)
     {
-      Process.Start(ImageManager.BasePath);
+      Process.Start(Pipeline.ImageManager.BasePath);
     }
 
     private void BtnDeleteImage_Click(object sender, RoutedEventArgs e)
@@ -80,11 +80,19 @@ namespace GreenhousePlusPlusCore
       var messageBoxResult = MessageBox.Show("Are you sure?", "Delete Confirmation", System.Windows.MessageBoxButton.YesNo);
       if (messageBoxResult == MessageBoxResult.Yes)
       {
-        var image = sender as System.Windows.Controls.Button;
-        var file = (string)image.Tag;
-        var paths = new ImageManager(file);
-        ImageListView.RemoveItem(file);
-        paths.Delete();
+        try
+        {
+          var image = sender as System.Windows.Controls.Button;
+          var file = (string)image.Tag;
+          var paths = new ImageManager();
+          paths.Open(file);
+          paths.Delete();
+          ImageListView.RemoveItem(file);
+        }
+        catch(Exception ex)
+        {
+          MessageBox.Show($"Error: {ex.Message}");
+        }
       }
     }
 

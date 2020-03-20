@@ -1,5 +1,6 @@
 ﻿using GreenhousePlusPlusCore.Vision;
 using SixLabors.ImageSharp;
+using System.Collections.Generic;
 
 namespace GreenhousePlusPlusCore.Models
 {
@@ -16,5 +17,16 @@ namespace GreenhousePlusPlusCore.Models
     public Histogram Histogram;
     public Histogram LeafHistogram;
     public Histogram EarthHistogram;
+  }
+
+  public class FilterFileInfo
+  {
+    public string Element { get; set; }
+    public string Name { get; set; }
+    public string Path { get; set; }
+  }
+
+  public class ImageProcessResult : List<FilterFileInfo>
+  {
   }
 }
