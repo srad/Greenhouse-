@@ -1,4 +1,7 @@
-﻿using System;
+﻿using GreenhousePlusPlusCore.Vision;
+using Newtonsoft.Json;
+using System;
+using System.IO;
 
 namespace GreenhousePlusPlusCLI
 {
@@ -6,7 +9,12 @@ namespace GreenhousePlusPlusCLI
   {
     static void Main(string[] args)
     {
-      Console.WriteLine("Hello World!");
+      var p = new Pipeline("Output");
+      p.Create(args[0]);
+      var files = JsonConvert.SerializeObject(p.Process());
+      var filename = Path.Combine("Output", Path.GetFileNameWithoutExtension(p.ImageManager.Filename) + ".json");
+      File.WriteAllText(filename, files);
+      Console.WriteLine();
     }
   }
 }
