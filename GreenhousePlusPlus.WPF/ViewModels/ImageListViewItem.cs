@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media.Imaging;
 
-namespace Greenhouse.ViewModels
+namespace GreenhousePlusPlusCore.ViewModels
 {
   public class ImageListViewItem
   {

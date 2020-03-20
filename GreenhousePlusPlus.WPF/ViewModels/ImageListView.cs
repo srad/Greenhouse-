@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Greenhouse.ViewModels
+namespace GreenhousePlusPlusCore.ViewModels
 {
   public class ImageListView : ObservableCollection<ImageListViewItem>
   {
@@ -14,7 +14,7 @@ namespace Greenhouse.ViewModels
       var item = new ImageListViewItem
       {
         File = System.IO.Path.GetFileName(file),
-        ImageData = Vision.ImageHelper.LoadBitmap(file),
+        ImageData = Greenhouse.Vision.ImageHelper.LoadBitmap(file),
         Title = "Image"
       };
 

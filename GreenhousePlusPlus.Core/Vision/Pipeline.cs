@@ -1,20 +1,19 @@
-﻿using Greenhouse.Models;
+﻿using GreenhousePlusPlusCore.Models;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Greenhouse.Vision
+namespace GreenhousePlusPlusCore.Vision
 {
-  class Pipeline
+  public class Pipeline
   {
     public ImageProcessor ImageProcessor;
     public ImageManager ImageFile;
     public readonly FilterValues FilterValues = new FilterValues();
 
     public Pipeline()
-    {}
+    { }
 
     public Pipeline(string filepath)
     {
@@ -22,12 +21,18 @@ namespace Greenhouse.Vision
       var randomFilename = Guid.NewGuid() + ".jpg";
       ImageFile = new ImageManager(randomFilename);
       var targetFile = ImageManager.ImagePath + randomFilename;
-      var image = ImageHelper.Resize(filepath, 1024, 786);
-      image.Save(targetFile);
 
-      // Create Thumb
-      var thumb = ImageHelper.Resize(ImageFile.Original.Path, 300, 200);
-      thumb.Save(ImageFile.Thumb.Path);
+      using (Image image = Image.Load<Rgba32>(filepath))
+      {
+        using (var target = image.Clone(x => x.Resize(0, 480)))
+        {
+          target.Save(targetFile);
+        }
+        using (var thumb = image.Clone(x => x.Resize(0, 200)))
+        {
+          thumb.Save(ImageFile.Thumb.Path);
+        }
+      }
     }
 
     public void Process(string file = null)

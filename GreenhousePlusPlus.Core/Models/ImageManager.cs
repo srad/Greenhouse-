@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
-namespace Greenhouse.Models
+namespace GreenhousePlusPlusCore.Models
 {
   public class ImageManager
   {
@@ -27,9 +29,9 @@ namespace Greenhouse.Models
     public ImageFile Leaf;
     public ImageFile Earth;
     public ImageFile Edge;
-    public ImageFile EdgeOverlay;
+    public ImageFile PlantTip;
     public ImageFile Blur;
-    public ImageFile Highpass;
+    public ImageFile Pass;
 
     public ImageFile Selection;
 
@@ -54,9 +56,9 @@ namespace Greenhouse.Models
       Leaf = new ImageFile(SegmentedPath + "leaf_" + pngFilename);
 
       Edge = new ImageFile(KernelPath + "edge_" + pngFilename);
-      EdgeOverlay = new ImageFile(KernelPath + "edge_overlay" + pngFilename);
+      PlantTip = new ImageFile(KernelPath + "edge_overlay" + pngFilename);
       Blur = new ImageFile(KernelPath + "blur_" + pngFilename);
-      Highpass = new ImageFile(KernelPath + "highpass_" + pngFilename);
+      Pass = new ImageFile(KernelPath + "pass_" + pngFilename);
 
       Directory.CreateDirectory(BasePath);
       Directory.CreateDirectory(ImagePath);
@@ -66,6 +68,16 @@ namespace Greenhouse.Models
       Directory.CreateDirectory(SelectionPath);
       Directory.CreateDirectory(SegmentedPath);
       Directory.CreateDirectory(KernelPath);
+    }
+
+    public static IEnumerable<string> GetFiles()
+    {
+      if (Directory.Exists(BasePath))
+      {
+        return Directory.EnumerateFiles(ThumbsPath, "*.*", SearchOption.TopDirectoryOnly)
+              .Where(s => s.EndsWith(".jpg") || s.EndsWith(".png"));
+      }
+      return new List<string>();
     }
 
     public void Delete()
@@ -81,9 +93,9 @@ namespace Greenhouse.Models
       Earth.Delete();
       Leaf.Delete();
       Edge.Delete();
-      EdgeOverlay.Delete();
+      PlantTip.Delete();
       Blur.Delete();
-      Highpass.Delete();
+      Pass.Delete();
     }
   }
 }

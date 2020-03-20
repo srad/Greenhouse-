@@ -1,9 +1,9 @@
-﻿using Greenhouse.Models;
+﻿using GreenhousePlusPlusCore.Models;
 using System;
 using System.ComponentModel;
 using System.Windows.Media.Imaging;
 
-namespace Greenhouse.ViewModels
+namespace GreenhousePlusPlusCore.ViewModels
 {
   public class MainWindowViewModel : INotifyPropertyChanged
   {
@@ -66,6 +66,25 @@ namespace Greenhouse.ViewModels
 
     #region ImageManger
     public ImageManager _File = null;
+    private bool _NotLoading = true;
+    public DesignerSerializationVisibility LoaderVisibility
+    {
+      get => _NotLoading ? DesignerSerializationVisibility.Hidden : DesignerSerializationVisibility.Visible;
+    }
+    public DesignerSerializationVisibility MainWindowVisibility
+    {
+      get => _NotLoading ? DesignerSerializationVisibility.Visible : DesignerSerializationVisibility.Hidden;
+    }
+    public bool NotLoading
+    {
+      get => _NotLoading;
+      set
+      {
+        _NotLoading = value;
+        OnPropertyChange("NotLoading");
+      }
+    }
+
     private BitmapImage GetOrDefaultImage(Func<BitmapImage> build) => _File == null ? DefaultImage : build();
 
     public ImageManager File
@@ -109,75 +128,75 @@ namespace Greenhouse.ViewModels
 
     public BitmapImage OriginalImage
     {
-      get => GetOrDefaultImage(() => _File.Original.BitmapImage.Value);
+      get => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.Original.Path));
     }
     public string OriginalImageFile { get => _File?.Original.Path; }
 
     public BitmapImage HistogramRed
     {
-      get  => GetOrDefaultImage(() => _File.HistR.BitmapImage.Value);
+      get  => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.HistR.Path));
     }
     public string HistogramRedFile { get => _File?.HistR.Path; }
-
+    
     public BitmapImage HistogramGreen
     {
-      get => GetOrDefaultImage(() => _File.HistG.BitmapImage.Value);
+      get => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.HistG.Path));
     }
     public string HistogramGreenFile { get => _File?.HistG.Path; }
 
     public BitmapImage HistogramBlue
     {
-      get  => GetOrDefaultImage(() => _File.HistB.BitmapImage.Value);
+      get  => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.HistB.Path));
     }
     public string HistogramBlueFile { get => _File?.HistB.Path; }
 
     public BitmapImage FilteredRed
     {
-      get => GetOrDefaultImage(() => _File.FilteredRed.BitmapImage.Value);
+      get => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.FilteredRed.Path));
     }
     public string FilteredRedFile { get => _File?.FilteredRed.Path; }
 
     public BitmapImage FilteredGreen
     {
-      get => GetOrDefaultImage(() => _File.FilteredGreen.BitmapImage.Value);
+      get => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.FilteredGreen.Path));
     }
     public string FilteredGreenFile { get => _File?.FilteredGreen.Path; }
 
     public BitmapImage Earth
     {
-      get => GetOrDefaultImage(() => _File.Earth.BitmapImage.Value);
+      get => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.Earth.Path));
     }
     public string EarthFile { get => _File?.Earth.Path; }
 
     public BitmapImage Leaf
     {
-      get => GetOrDefaultImage(() => _File.Leaf.BitmapImage.Value);
+      get => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.Leaf.Path));
     }
     public string LeafFile { get => _File?.Leaf.Path; }
 
     public BitmapImage EdgeImage
     {
-      get => GetOrDefaultImage(() => _File.Edge.BitmapImage.Value);
+      get => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.Edge.Path));
     }
     public string EdgeFile { get => _File?.Edge.Path; }
 
     public BitmapImage EdgeOverlayImage
     {
-      get => GetOrDefaultImage(() => _File.EdgeOverlay.BitmapImage.Value);
+      get => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.PlantTip.Path));
     }
-    public string EdgeOverlayFile { get => _File?.EdgeOverlay.Path; }
+    public string EdgeOverlayFile { get => _File?.PlantTip.Path; }
 
     public BitmapImage BlurImage
     {
-      get => GetOrDefaultImage(() => _File.Blur.BitmapImage.Value);
+      get => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.Blur.Path));
     }
     public string BlurFile { get => _File?.Blur.Path; }
 
     public BitmapImage PassImage
     {
-      get => GetOrDefaultImage(() => _File.Highpass.BitmapImage.Value);
+      get => GetOrDefaultImage(() => Greenhouse.Vision.ImageHelper.LoadBitmap(_File.Pass.Path));
     }
-    public string PassFile { get => _File?.Highpass.Path; }
+    public string PassFile { get => _File?.Pass.Path; }
 
     public string ImageLabel
     {
@@ -185,7 +204,7 @@ namespace Greenhouse.ViewModels
       {
         if (_File != null)
         {
-          return $"Original Image: {(int)_File.Original.BitmapImage.Value.Width}x{(int)_File.Original.BitmapImage.Value.Height} ({StrFormatByteSize(new System.IO.FileInfo(_File.Original.Path).Length)})";
+          return $"Original Image: {_File.Original.Info.Value.Width}x{_File.Original.Info.Value.Height} ({StrFormatByteSize(new System.IO.FileInfo(_File.Original.Path).Length)})";
         }
         return "No file loaded";
       }

@@ -1,4 +1,4 @@
-﻿namespace Greenhouse.Vision
+﻿namespace GreenhousePlusPlusCore.Vision
 {
   public class RGB
   {

@@ -1,19 +1,25 @@
-﻿using Greenhouse.Models;
+﻿using GreenhousePlusPlusCore.Models;
 using System;
-using System.Drawing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Advanced;
 
-namespace Greenhouse.Vision
+namespace GreenhousePlusPlusCore.Vision
 {
   public class Histogram
   {
     public RGBArray RGBArray = new RGBArray();
 
-    public Bitmap HistogramR;
-    public Bitmap HistogramG;
-    public Bitmap HistogramB;
+    public Image<Rgba32> HistogramR;
+    public Image<Rgba32> HistogramG;
+    public Image<Rgba32> HistogramB;
 
     public Histogram Add(Histogram other)
     {
+      if (other == null)
+      {
+        return this;
+      }
       for (int i = 0; i < RGBArray.MAX; i++)
       {
         RGBArray.R[i] += other.RGBArray.R[i];
@@ -39,13 +45,13 @@ namespace Greenhouse.Vision
 
     public void Draw(FilterResult filterResult, bool DrawPointHistogram, int width, int height)
     {
-      HistogramR = new Bitmap(width, height);
-      HistogramG = new Bitmap(width, height);
-      HistogramB = new Bitmap(width, height);
-
       var max = filterResult.Histogram.Max();
       var maxAll = Math.Max(Math.Max(max.B, max.G), max.R);
-      var colorBandHeight = 4;
+      var colorBandHeight = 5;
+      HistogramR = new Image<Rgba32>(Configuration.Default, width, height + colorBandHeight + 1, new Rgba32(255, 255, 255, 0));
+      HistogramG = new Image<Rgba32>(Configuration.Default, width, height + colorBandHeight + 1, new Rgba32(255, 255, 255, 0));
+      HistogramB = new Image<Rgba32>(Configuration.Default, width, height + colorBandHeight + 1, new Rgba32(255, 255, 255, 0));
+
 
       for (int i = 0; i < RGBArray.MAX; i++)
       {
@@ -55,31 +61,40 @@ namespace Greenhouse.Vision
 
         if (DrawPointHistogram)
         {
-          HistogramR.SetPixel(i, HistogramR.Height - r - 1, Color.FromArgb(125, 255, 0, 0));
-          HistogramG.SetPixel(i, HistogramG.Height - g - 1, Color.FromArgb(125, 0, 255, 0));
-          HistogramB.SetPixel(i, HistogramB.Height - b - 1, Color.FromArgb(125, 0, 0, 255));
+          HistogramR[i, HistogramR.Height - r - 1] = Rgba32.Red;
+          HistogramG[i, HistogramG.Height - g - 1] = Rgba32.Green;
+          HistogramB[i, HistogramB.Height - b - 1] = Rgba32.Blue;
         }
         else
         {
           for (int yR = HistogramR.Height - r - 1; yR < HistogramR.Height - 1; yR++)
           {
-            HistogramR.SetPixel(i, yR, Color.FromArgb(255, 255, 0, 0));
+            HistogramR[i, yR] = Rgba32.Red;
           }
           for (int yG = HistogramG.Height - g - 1; yG < HistogramG.Height - 1; yG++)
           {
-            HistogramG.SetPixel(i, yG, Color.FromArgb(255, 0, 255, 0));
+            HistogramG[i, yG] = Rgba32.Green;
           }
           for (int yB = HistogramB.Height - b - 1; yB < HistogramB.Height - 1; yB++)
           {
-            HistogramB.SetPixel(i, yB, Color.FromArgb(255, 0, 0, 255));
+            HistogramB[i, yB] = Rgba32.Blue;
           }
         }
 
-        for (int j = 1; j < colorBandHeight; j++)
+        // Color band
+        for (int y = 0; y < colorBandHeight; y++)
         {
-          HistogramR.SetPixel(i, HistogramR.Height - j, Color.FromArgb(i, i, i));
-          HistogramG.SetPixel(i, HistogramG.Height - j, Color.FromArgb(i, i, i));
-          HistogramB.SetPixel(i, HistogramB.Height - j, Color.FromArgb(i, i, i));
+          var redSpan = HistogramR.GetPixelRowSpan(y + height + 1);
+          var greenSpan = HistogramG.GetPixelRowSpan(y + height + 1);
+          var blueSpan = HistogramB.GetPixelRowSpan(y + height + 1);
+
+          for (int x = 0; x < width; x++)
+          {
+            var ratio = (float)x / RGBArray.MAX;
+            redSpan[x] = new Rgba32(ratio, 0, 0);
+            greenSpan[x] = new Rgba32(0, ratio, 0);
+            blueSpan[x] = new Rgba32(0, 0, ratio);
+          }
         }
       }
     }

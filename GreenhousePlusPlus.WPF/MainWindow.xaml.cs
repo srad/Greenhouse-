@@ -1,16 +1,13 @@
-﻿using Greenhouse.Models;
-using Greenhouse.ViewModels;
-using Greenhouse.Vision;
+﻿using GreenhousePlusPlusCore.ViewModels;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
+using GreenhousePlusPlusCore.Vision;
+using GreenhousePlusPlusCore.Models;
 
-namespace Greenhouse
+namespace GreenhousePlusPlusCore
 {
   public partial class MainWindow : Window
   {
@@ -24,14 +21,10 @@ namespace Greenhouse
     {
       InitializeComponent();
 
-      if (Directory.Exists(ImageManager.BasePath))
+      var images = ImageManager.GetFiles();
+      foreach (var image in images)
       {
-        var images = Directory.EnumerateFiles(ImageManager.ThumbsPath, "*.*", SearchOption.TopDirectoryOnly)
-            .Where(s => s.EndsWith(".jpg") || s.EndsWith(".png"));
-        foreach (var image in images)
-        {
-          ImageListView.AddImage(image);
-        }
+        ImageListView.AddImage(image);
       }
 
       ThumbList.ItemsSource = ImageListView;
@@ -49,21 +42,25 @@ namespace Greenhouse
       };
       if (openFileDialog.ShowDialog() == true)
       {
+        MainWindowViewModel.NotLoading = false;
         // Copy file to project
         var filePath = openFileDialog.FileName;
         Pipeline = new Pipeline(filePath);
         ImageListView.AddImage(Pipeline.ImageFile.Thumb.Path);
 
         ProcessFile();
+        MainWindowViewModel.NotLoading = true;
       }
     }
 
     private void ProcessFile(string file = null)
     {
+      MainWindowViewModel.NotLoading = false;
       Pipeline.Process(file);
-      imgInput.Source = Pipeline.ImageFile.Original.BitmapImage.Value;
+      imgInput.Source = Greenhouse.Vision.ImageHelper.LoadBitmap(Pipeline.ImageFile.Original.Path);
       MainWindowViewModel.File = Pipeline.ImageFile;
       ImageLoaded = true;
+      MainWindowViewModel.NotLoading = true;
     }
 
     private void Image_MouseDown(object sender, MouseButtonEventArgs e)
@@ -113,6 +110,19 @@ namespace Greenhouse
       if (file != null)
       {
         OpenFile(file);
+      }
+    }
+
+    private void MenuItem_About(object sender, RoutedEventArgs e)
+    {
+      MessageBox.Show("Programmed by Saman Sedighi Rad\nWebsite: https://github.com/srad\nMIT License, 2020");
+    }
+
+    private void FilterValueChanged(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+    {
+      if (ImageLoaded)
+      {
+        ProcessFile();
       }
     }
   }

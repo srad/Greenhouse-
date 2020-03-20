@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Greenhouse.Properties
+namespace GreenhousePlusPlusCore.Properties
 {
 
 

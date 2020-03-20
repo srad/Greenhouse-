@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Greenhouse.Models
+namespace GreenhousePlusPlusCore.Models
 {
   public class FilterValues
   {
@@ -9,9 +9,9 @@ namespace Greenhouse.Models
     public double RedMinRatio { get; set; }
     public double GreenMinRatio { get; set; }
     public double ThetaTheshold { get; set; } = 0.83d;
-    public byte WhiteThreshold { get; set; } = 141;
-    public int BlurRounds { get; set; } = 100;
-    public int ScanlineInterpolationWidth { get; set; } = 6;
+    public byte WhiteThreshold { get; set; } = 25;
+    public int BlurRounds { get; set; } = 40;
+    public int ScanlineInterpolationWidth { get; set; } = 0;
 
     public FilterValues(double red = 10, double green = 10)
     {
