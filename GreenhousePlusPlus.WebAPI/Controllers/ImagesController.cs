@@ -19,7 +19,7 @@ namespace GreenhousePlusPlus.WebAPI
 
     public ImagesController(IWebHostEnvironment env)
     {
-      _pipeline = new Pipeline(@"Static\");
+      _pipeline = new Pipeline("Static");
       _env = env;
     }
 
@@ -70,7 +70,7 @@ namespace GreenhousePlusPlus.WebAPI
     [HttpDelete("{file}")]
     public void Delete(string file)
     {
-      var m = new ImageManager(@"Static\");
+      var m = new ImageManager("Static");
       m.Open(file);
       m.Delete();
     }

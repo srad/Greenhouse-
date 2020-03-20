@@ -10,17 +10,16 @@ namespace GreenhousePlusPlusCore.Models
 {
   public class ImageManager
   {
-    public const string ImageDir = @"Images\";
+    public const string ImageDir = "Images";
 
     private readonly string BaseDir;
-    public string BasePath { get => BaseDir + ImageDir; }
-    public string ImagePath { get => BaseDir + ImageDir + @"Original\"; }
-    public string ThumbsPath { get => BaseDir + ImageDir + @"Thumbs\"; }
-    public string FilteredPath { get => BaseDir + ImageDir + @"Filtered\"; }
-    public string SegmentedPath { get => BaseDir + ImageDir + @"Segmented\"; }
-    public string HistPath { get => BaseDir + ImageDir + @"Hist\"; }
-    public string SelectionPath { get => BaseDir + ImageDir + @"Selection\"; }
-    public string KernelPath { get => BaseDir + ImageDir + @"Kernels\"; }
+    public string BasePath { get => Path.Combine(BaseDir, ImageDir); }
+    public string ImagePath { get => Path.Combine(BaseDir, ImageDir, "Original"); }
+    public string ThumbsPath { get => Path.Combine(BaseDir, ImageDir, "Thumbs"); }
+    public string FilteredPath { get => Path.Combine(BaseDir, ImageDir, "Filtered"); }
+    public string SegmentedPath { get => Path.Combine(BaseDir, ImageDir, "Segmented"); }
+    public string HistPath { get => Path.Combine(BaseDir, ImageDir, "Hist"); }
+    public string KernelPath { get => Path.Combine(BaseDir, ImageDir, "Kernels"); }
 
     private string _filename;
     public ImageFile Original;
@@ -39,8 +38,6 @@ namespace GreenhousePlusPlusCore.Models
     public ImageFile Blur;
     public ImageFile Pass;
 
-    public ImageFile Selection;
-
     private bool FileOpened = false;
 
     public ImageManager() : this(AppDomain.CurrentDomain.BaseDirectory)
@@ -54,7 +51,6 @@ namespace GreenhousePlusPlusCore.Models
       Directory.CreateDirectory(ThumbsPath);
       Directory.CreateDirectory(FilteredPath);
       Directory.CreateDirectory(HistPath);
-      Directory.CreateDirectory(SelectionPath);
       Directory.CreateDirectory(SegmentedPath);
       Directory.CreateDirectory(KernelPath);
     }
@@ -63,8 +59,8 @@ namespace GreenhousePlusPlusCore.Models
     {
       var filename = Guid.NewGuid();
       _filename = filename + ".jpg";
-      var destFile = ImagePath + _filename;
-      var thumbFile = ThumbsPath + _filename;
+      var destFile = Path.Combine(ImagePath, _filename);
+      var thumbFile = Path.Combine(ThumbsPath, _filename);
 
       using (var image = Image.Load<Rgba32>(srcFile))
       {
@@ -83,26 +79,24 @@ namespace GreenhousePlusPlusCore.Models
 
     public void Open(string filename)
     {
-      Original = new ImageFile(ImagePath + filename);
-      Thumb = new ImageFile(ThumbsPath + filename);
+      Original = new ImageFile(Path.Combine(ImagePath, filename));
+      Thumb = new ImageFile(Path.Combine(ThumbsPath, filename));
 
-      HistR = new ImageFile(HistPath + "r_" + filename);
-      HistG = new ImageFile(HistPath + "g_" + filename);
-      HistB = new ImageFile(HistPath + "b_" + filename);
-
-      Selection = new ImageFile(SelectionPath + filename);
+      HistR = new ImageFile(Path.Combine(HistPath, "r_" + filename));
+      HistG = new ImageFile(Path.Combine(HistPath, "g_" + filename));
+      HistB = new ImageFile(Path.Combine(HistPath, "b_" + filename));
 
       var pngFilename = Path.GetFileNameWithoutExtension(filename) + ".png";
 
-      FilteredGreen = new ImageFile(FilteredPath + "green_" + pngFilename);
-      FilteredRed = new ImageFile(FilteredPath + "red_" + pngFilename);
-      Earth = new ImageFile(SegmentedPath + "earth_" + pngFilename);
-      Leaf = new ImageFile(SegmentedPath + "leaf_" + pngFilename);
+      FilteredGreen = new ImageFile(Path.Combine(FilteredPath, "green_" + pngFilename));
+      FilteredRed = new ImageFile(Path.Combine(FilteredPath, "red_" + pngFilename));
+      Earth = new ImageFile(Path.Combine(SegmentedPath, "earth_" + pngFilename));
+      Leaf = new ImageFile(Path.Combine(SegmentedPath, "leaf_" + pngFilename));
 
-      Edge = new ImageFile(KernelPath + "edge_" + pngFilename);
-      PlantTip = new ImageFile(KernelPath + "edge_overlay" + pngFilename);
-      Blur = new ImageFile(KernelPath + "blur_" + pngFilename);
-      Pass = new ImageFile(KernelPath + "pass_" + pngFilename);
+      Edge = new ImageFile(Path.Combine(KernelPath, "edge_" + pngFilename));
+      PlantTip = new ImageFile(Path.Combine(KernelPath, "edge_overlay" + pngFilename));
+      Blur = new ImageFile(Path.Combine(KernelPath, "blur_" + pngFilename));
+      Pass = new ImageFile(Path.Combine(KernelPath, "pass_" + pngFilename));
 
       FileOpened = true;
     }
@@ -130,7 +124,6 @@ namespace GreenhousePlusPlusCore.Models
       HistR.Delete();
       HistG.Delete();
       HistB.Delete();
-      Selection.Delete();
       Earth.Delete();
       Leaf.Delete();
       Edge.Delete();
