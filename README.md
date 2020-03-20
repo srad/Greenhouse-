@@ -1,6 +1,22 @@
 # Greenhouse++
 
+## Overview
+
+This project was developed as part the the course __System Engineering Meets Life Sciences__ at the Goethe University Frankfurt.
+
+The goal of the course was to design a system which combines System Engineering practices with Cognitive Systems to make predictions about system with uncertain behavior/probability distributions.
+
+The project report can be found here: https://github.com/srad/Greenhouse-Report
+
+As part of the course this project has been implemented: An automated greenhouse `yield estimation` system for tomato plants - only based on camera pictures taken from the plants.
+
+One part of the design of the computational pipeline was
+1. Gather real world probability distributions
+1. Design a computational pipeline to implemnt this goal.
+
 ## Quickstart
+
+The CLI and WebAPI run cross-platform on .NET Core 3.x, but the WPF of course not.
 
 ### WPF
 
@@ -13,6 +29,15 @@ git clone https://github.com/srad/GreenhousePlusPlus.git
 cd GreenhousePlusPlus/GreenhousePlusPlus.WebAPI
 dotnet restore
 dotnet run
+```
+
+### CLI
+
+```bash
+git clone https://github.com/srad/GreenhousePlusPlus.git
+cd GreenhousePlusPlus/GreenhousePlusPlus.CLI
+dotnet restore
+dotnet run /home/myhome/plant.jpg
 ```
 
 #### Test the API from shell
@@ -32,20 +57,6 @@ curl -X GET localhost:5100/api/images
 
 [{"path":"/Static/Images/Thumbs/7f974aa3-54ea-4297-be26-1153418600bb.jpg","name":"7f974aa3-54ea-4297-be26-1153418600bb.jpg"}]
 ```
-
-## Overview
-
-This project was developed as part the the course __System Engineering Meets Life Sciences__ at the Goethe University Frankfurt.
-
-The goal of the course was to design a system which combines System Engineering practices with Cognitive Systems to make predictions about system with uncertain behavior/probability distributions.
-
-The project report can be found here: https://github.com/srad/Greenhouse-Report
-
-As part of the course this project has been implemented: An automated greenhouse `yield estimation` system for tomato plants - only based on camera pictures taken from the plants.
-
-One part of the design of the computational pipeline was
-1. Gather real world probability distributions
-1. Design a computational pipeline to implemnt this goal.
 
 ## Implementation
 
