@@ -28,7 +28,7 @@ curl -F "file=@/root/src/plant.jpg" localhost:5100/api/images
 Get all images on the server:
  
 ```bash
-url -X GET localhost:5100/api/images
+curl -X GET localhost:5100/api/images
 
 [{"path":"/Static/Images/Thumbs/7f974aa3-54ea-4297-be26-1153418600bb.jpg","name":"7f974aa3-54ea-4297-be26-1153418600bb.jpg"}]
 ```
