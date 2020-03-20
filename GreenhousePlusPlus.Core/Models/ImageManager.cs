@@ -21,7 +21,7 @@ namespace GreenhousePlusPlusCore.Models
     public string HistPath { get => Path.Combine(BaseDir, ImageDir, "Hist"); }
     public string KernelPath { get => Path.Combine(BaseDir, ImageDir, "Kernels"); }
 
-    private string _filename;
+    public string Filename;
     public ImageFile Original;
     public ImageFile Thumb;
     public ImageFile FilteredGreen;
@@ -58,9 +58,9 @@ namespace GreenhousePlusPlusCore.Models
     public void Create(string srcFile)
     {
       var filename = Guid.NewGuid();
-      _filename = filename + ".jpg";
-      var destFile = Path.Combine(ImagePath, _filename);
-      var thumbFile = Path.Combine(ThumbsPath, _filename);
+      Filename = filename + ".jpg";
+      var destFile = Path.Combine(ImagePath, Filename);
+      var thumbFile = Path.Combine(ThumbsPath, Filename);
 
       using (var image = Image.Load<Rgba32>(srcFile))
       {
@@ -74,7 +74,7 @@ namespace GreenhousePlusPlusCore.Models
         }
       }
 
-      Open(_filename);
+      Open(Filename);
     }
 
     public void Open(string filename)
