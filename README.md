@@ -1,5 +1,38 @@
 # Greenhouse++
 
+## Quickstart
+
+### WPF
+
+Just open the WPF project in Visual C# 2019
+
+### Web API
+
+```bash
+git clone https://github.com/srad/GreenhousePlusPlus.git
+cd GreenhousePlusPlus/GreenhousePlusPlus.WebAPI
+dotnet restore
+dotnet run
+```
+
+#### Test the API from shell
+
+Upload image:
+
+```bash
+curl -F "file=@/root/src/plant.jpg" localhost:5100/api/images
+
+[{"element":"original","name":"7f974aa3-54ea-4297-be26-1153418600bb.jpg","path":"/Static/Images/Original/7f974aa3-54ea-4297-be26-1153418600bb.jpg"},{"element":"blur","name":"blur_7f974aa3-54ea-4297-be26-1153418600bb.png",...]
+```
+
+Get all images on the server:
+ 
+```bash
+url -X GET localhost:5100/api/images
+
+[{"path":"/Static/Images/Thumbs/7f974aa3-54ea-4297-be26-1153418600bb.jpg","name":"7f974aa3-54ea-4297-be26-1153418600bb.jpg"}]
+```
+
 ## Overview
 
 This project was developed as part the the course __System Engineering Meets Life Sciences__ at the Goethe University Frankfurt.
@@ -27,6 +60,8 @@ As part of the computational pipeline the `Core` client does:
 1. Image segmentation and create from these information the covered leaf area of a plant per ground unit.
 1. It gathers each segment's color distributions. This distributions can then be used either for simulation to generate realistic models or to increase the system's robustness.
 1. Applies a image processing pipeline to find the longest vertical edge - which here is the plant's pole and is used for height estimation. This is a series of filter and algorithms.
+
+## Screenshots
 
 ![](https://raw.githubusercontent.com/srad/GreenhousePP/master/Docs/Images/ui3.jpg)
 
