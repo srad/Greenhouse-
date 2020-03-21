@@ -1,5 +1,9 @@
 # Greenhouse++
 
+Related projects:
+1. https://github.com/srad/GreenhousePlusPlus.App
+1. https://github.com/srad/Greenhouse-Report
+
 ## Overview
 
 This project was developed as part the the course __System Engineering Meets Life Sciences__ at the Goethe University Frankfurt.
