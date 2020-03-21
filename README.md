@@ -64,6 +64,7 @@ This Visual Studio project is split into mutiple C# projects as the names indica
 1. `Core` contains the Library which is build for .NET Core 3.x and .NET Framework 4.7.x
 1. `WebAPI` provides a .NET Core 3.x web API implementation to consume the library functionalities.
 1. `WPF` is an WPF Windows desktop application implementation in Visual C# 2019 which uses the same library as the `WebAPI`.
+1. A web frontend implementation is available which consumes the web API: https://github.com/srad/GreenhousePlusPlus.App
 
 ## Algorithm
 
