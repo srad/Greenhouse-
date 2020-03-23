@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using GreenhousePlusPlus.Core.Models;
+using GreenhousePlusPlus.Core.Vision;
 using Microsoft.AspNetCore.Mvc;
-using GreenhousePlusPlusCore.Models;
-using GreenhousePlusPlusCore.Vision;
 using Microsoft.AspNetCore.Hosting;
 using GreenhousePlusPlus.WebAPI.Models;
 
