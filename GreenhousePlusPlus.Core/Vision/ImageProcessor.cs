@@ -1,14 +1,14 @@
-﻿using GreenhousePlusPlusCore.Models;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
-using SixLabors.ImageSharp.PixelFormats;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using GreenhousePlusPlus.Core.Models;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.PixelFormats;
 
-namespace GreenhousePlusPlusCore.Vision
+namespace GreenhousePlusPlus.Core.Vision
 {
   public class ImageProcessor
   {

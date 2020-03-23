@@ -1,4 +1,4 @@
-﻿namespace GreenhousePlusPlusCore.Models
+﻿namespace GreenhousePlusPlus.Core.Models
 {
   public static class ImageIdx
   {

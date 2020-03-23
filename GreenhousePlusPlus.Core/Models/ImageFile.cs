@@ -1,8 +1,8 @@
-﻿using SixLabors.ImageSharp;
-using System;
+﻿using System;
 using System.IO;
+using SixLabors.ImageSharp;
 
-namespace GreenhousePlusPlusCore.Models
+namespace GreenhousePlusPlus.Core.Models
 {
   struct ColCounter
   {

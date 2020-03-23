@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GreenhousePlusPlusCore.Models
+namespace GreenhousePlusPlus.Core.Models
 {
   public class FilterValues
   {

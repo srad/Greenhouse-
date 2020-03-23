@@ -1,8 +1,8 @@
-﻿using GreenhousePlusPlusCore.Vision;
+﻿using System.Collections.Generic;
+using GreenhousePlusPlus.Core.Vision;
 using SixLabors.ImageSharp;
-using System.Collections.Generic;
 
-namespace GreenhousePlusPlusCore.Models
+namespace GreenhousePlusPlus.Core.Models
 {
   public class FilterResult
   {

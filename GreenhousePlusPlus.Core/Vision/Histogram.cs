@@ -1,14 +1,14 @@
-﻿using GreenhousePlusPlusCore.Models;
-using System;
+﻿using System;
+using GreenhousePlusPlus.Core.Models;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.PixelFormats;
 
-namespace GreenhousePlusPlusCore.Vision
+namespace GreenhousePlusPlus.Core.Vision
 {
   public class Histogram
   {
-    public RGBArray RGBArray = new RGBArray();
+    public RgbArray RGBArray = new RgbArray();
 
     public Image<Rgba32> HistogramR;
     public Image<Rgba32> HistogramG;
@@ -20,7 +20,7 @@ namespace GreenhousePlusPlusCore.Vision
       {
         return this;
       }
-      for (int i = 0; i < RGBArray.MAX; i++)
+      for (int i = 0; i < RgbArray.Max; i++)
       {
         RGBArray.R[i] += other.RGBArray.R[i];
         RGBArray.G[i] += other.RGBArray.G[i];
@@ -29,11 +29,11 @@ namespace GreenhousePlusPlusCore.Vision
       return this;
     }
 
-    public RGB Max()
+    public Rgb Max()
     {
-      var max = new RGB();
+      var max = new Rgb();
 
-      for (int i = 0; i < RGBArray.MAX; i++)
+      for (int i = 0; i < RgbArray.Max; i++)
       {
         max.R = Math.Max(max.R, RGBArray.R[i]);
         max.G = Math.Max(max.G, RGBArray.G[i]);
@@ -53,7 +53,7 @@ namespace GreenhousePlusPlusCore.Vision
       HistogramB = new Image<Rgba32>(Configuration.Default, width, height + colorBandHeight + 1, new Rgba32(255, 255, 255, 0));
 
 
-      for (int i = 0; i < RGBArray.MAX; i++)
+      for (int i = 0; i < RgbArray.Max; i++)
       {
         int r = (int)(((double)filterResult.Histogram.RGBArray.R[i] / (double)(maxAll + 1)) * height);
         int g = (int)(((double)filterResult.Histogram.RGBArray.G[i] / (double)(maxAll + 1)) * height);
@@ -90,7 +90,7 @@ namespace GreenhousePlusPlusCore.Vision
 
           for (int x = 0; x < width; x++)
           {
-            var ratio = (float)x / RGBArray.MAX;
+            var ratio = (float)x / RgbArray.Max;
             redSpan[x] = new Rgba32(ratio, 0, 0);
             greenSpan[x] = new Rgba32(0, ratio, 0);
             blueSpan[x] = new Rgba32(0, 0, ratio);

@@ -1,11 +1,10 @@
-﻿using GreenhousePlusPlusCore.Models;
-using System;
+﻿using GreenhousePlusPlus.Core.Models;
 
-namespace GreenhousePlusPlusCore.Vision
+namespace GreenhousePlusPlus.Core.Vision
 {
   public class Pipeline
   {
-    private ImageProcessor ImageProcessor;
+    private ImageProcessor _imageProcessor;
     public readonly ImageManager ImageManager;
     public readonly FilterValues FilterValues = new FilterValues();
 
@@ -35,8 +34,8 @@ namespace GreenhousePlusPlusCore.Vision
       {
         ImageManager.Open(file);
       }
-      ImageProcessor = new ImageProcessor(ImageManager);
-      return ImageProcessor.Start(FilterValues);
+      _imageProcessor = new ImageProcessor(ImageManager);
+      return _imageProcessor.Start(FilterValues);
     }
   }
 }

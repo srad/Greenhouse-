@@ -1,9 +1,9 @@
-﻿using GreenhousePlusPlusCore.Vision;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.IO;
+using GreenhousePlusPlus.Core.Vision;
+using Newtonsoft.Json;
 
-namespace GreenhousePlusPlusCLI
+namespace GreenhousePlusPlus.CLI
 {
   class Program
   {
