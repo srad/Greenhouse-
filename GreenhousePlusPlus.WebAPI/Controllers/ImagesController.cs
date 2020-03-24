@@ -5,11 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using GreenhousePlusPlus.Core.Models;
 using GreenhousePlusPlus.Core.Vision;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Hosting;
 using GreenhousePlusPlus.WebAPI.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 
-namespace GreenhousePlusPlus.WebAPI
+namespace GreenhousePlusPlus.WebAPI.Controllers
 {
   [Route("api/[controller]")]
   public class ImagesController : Controller
@@ -34,9 +34,20 @@ namespace GreenhousePlusPlus.WebAPI
       return files;
     }
 
+    /// <summary>
+    /// Upload a new file.
+    /// </summary>
+    /// <param name="upload"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<IEnumerable<FilterFileInfo>> Post([FromForm]SingleFileUpload upload)
     {
+      var mb = ((float)upload.File.Length / 1024) / 1024;
+      if (mb > 3.0)
+      {
+        throw new NotSupportedException($"The upload exceeds the maximum size of 3MB");
+      }
+      
       // full path to file in temp location
       var tmpFile = Path.GetTempFileName();
 
@@ -56,6 +67,11 @@ namespace GreenhousePlusPlus.WebAPI
         .ToList();
     }
 
+    /// <summary>
+    /// Load and process an existing file.
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
     [HttpPut("{file}")]
     public IEnumerable<FilterFileInfo> Open(string file)
     {
@@ -63,7 +79,7 @@ namespace GreenhousePlusPlus.WebAPI
       var result = _pipeline.Process();
 
       return result
-        .Select(file => new FilterFileInfo { Element = file.Element, Path = @"/" + file.Path.Replace("\\", "/"), Name = Path.GetFileName(file.Path) })
+        .Select(f => new FilterFileInfo { Element = f.Element, Path = @"/" + f.Path.Replace("\\", "/"), Name = Path.GetFileName(f.Path) })
         .ToList();
     }
 
