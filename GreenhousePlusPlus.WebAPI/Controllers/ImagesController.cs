@@ -16,6 +16,7 @@ namespace GreenhousePlusPlus.WebAPI.Controllers
   {
     private readonly Pipeline _pipeline;
     private readonly IWebHostEnvironment _env;
+    private const double MaxUploadSizeMb = 5.0;
 
     public ImagesController(IWebHostEnvironment env)
     {
@@ -42,8 +43,8 @@ namespace GreenhousePlusPlus.WebAPI.Controllers
     [HttpPost]
     public async Task<IEnumerable<FilterFileInfo>> Post([FromForm]SingleFileUpload upload)
     {
-      var mb = ((float)upload.File.Length / 1024) / 1024;
-      if (mb > 3.0)
+      var mb = ((double)upload.File.Length / 1024) / 1024;
+      if (mb > MaxUploadSizeMb)
       {
         throw new NotSupportedException($"The upload exceeds the maximum size of 3MB");
       }

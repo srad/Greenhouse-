@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
@@ -12,14 +13,14 @@ namespace GreenhousePlusPlus.Core.Models
   {
     public const string ImageDir = "Images";
 
-    private readonly string BaseDir;
-    public string BasePath { get => Path.Combine(BaseDir, ImageDir); }
-    public string ImagePath { get => Path.Combine(BaseDir, ImageDir, "Original"); }
-    public string ThumbsPath { get => Path.Combine(BaseDir, ImageDir, "Thumbs"); }
-    public string FilteredPath { get => Path.Combine(BaseDir, ImageDir, "Filtered"); }
-    public string SegmentedPath { get => Path.Combine(BaseDir, ImageDir, "Segmented"); }
-    public string HistPath { get => Path.Combine(BaseDir, ImageDir, "Hist"); }
-    public string KernelPath { get => Path.Combine(BaseDir, ImageDir, "Kernels"); }
+    private readonly string _baseDir;
+    public string BasePath { get => Path.Combine(_baseDir, ImageDir); }
+    public string ImagePath { get => Path.Combine(_baseDir, ImageDir, "Original"); }
+    public string ThumbsPath { get => Path.Combine(_baseDir, ImageDir, "Thumbs"); }
+    public string FilteredPath { get => Path.Combine(_baseDir, ImageDir, "Filtered"); }
+    public string SegmentedPath { get => Path.Combine(_baseDir, ImageDir, "Segmented"); }
+    public string HistPath { get => Path.Combine(_baseDir, ImageDir, "Hist"); }
+    public string KernelPath { get => Path.Combine(_baseDir, ImageDir, "Kernels"); }
 
     public string Filename;
     public ImageFile Original;
@@ -38,14 +39,14 @@ namespace GreenhousePlusPlus.Core.Models
     public ImageFile Blur;
     public ImageFile Pass;
 
-    private bool FileOpened = false;
+    private bool _fileOpened = false;
 
     public ImageManager() : this(AppDomain.CurrentDomain.BaseDirectory)
     {}
 
     public ImageManager(string baseDir)
     {
-      this.BaseDir = baseDir;
+      this._baseDir = baseDir;
       Directory.CreateDirectory(BasePath);
       Directory.CreateDirectory(ImagePath);
       Directory.CreateDirectory(ThumbsPath);
@@ -66,7 +67,7 @@ namespace GreenhousePlusPlus.Core.Models
       {
         using (var target = image.Clone(x => x.Resize(0, 480)))
         {
-          target.Save(destFile);
+          target.Save(destFile, new JpegEncoder{Quality = 80});
         }
         using (var thumb = image.Clone(x => x.Resize(0, 200)))
         {
@@ -98,7 +99,7 @@ namespace GreenhousePlusPlus.Core.Models
       Blur = new ImageFile(Path.Combine(KernelPath, "blur_" + pngFilename));
       Pass = new ImageFile(Path.Combine(KernelPath, "pass_" + pngFilename));
 
-      FileOpened = true;
+      _fileOpened = true;
     }
 
     public IEnumerable<string> GetFiles()
@@ -113,7 +114,7 @@ namespace GreenhousePlusPlus.Core.Models
 
     public void Delete()
     {
-      if (!FileOpened || !File.Exists(Original.Path))
+      if (!_fileOpened || !File.Exists(Original.Path))
       {
         throw new FileNotFoundException("No file to delete");
       }
