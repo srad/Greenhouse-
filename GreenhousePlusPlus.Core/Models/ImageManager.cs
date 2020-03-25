@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NLog.Web;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
@@ -41,16 +42,33 @@ namespace GreenhousePlusPlus.Core.Models
 
     private bool _fileOpened = false;
 
+    private NLog.Logger _logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+
+    private void MkDir(string name)
+    {
+      try
+      {
+        _logger.Info($"Creating directory: {name}");
+        Directory.CreateDirectory(name);
+      }
+      catch(Exception ex)
+      {
+        _logger.Error(ex.Message);
+        throw;
+      }
+    }
+
     public ImageManager(string imageRoot)
     {
+
       _imageRoot = imageRoot;
-      Directory.CreateDirectory(BasePath);
-      Directory.CreateDirectory(ImagePath);
-      Directory.CreateDirectory(ThumbsPath);
-      Directory.CreateDirectory(FilteredPath);
-      Directory.CreateDirectory(HistPath);
-      Directory.CreateDirectory(SegmentedPath);
-      Directory.CreateDirectory(KernelPath);
+      MkDir(BasePath);
+      MkDir(ImagePath);
+      MkDir(ThumbsPath);
+      MkDir(FilteredPath);
+      MkDir(HistPath);
+      MkDir(SegmentedPath);
+      MkDir(KernelPath);
     }
 
     public void Create(string srcFile)

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace GreenhousePlusPlus.WebAPI
 {
@@ -48,10 +49,10 @@ namespace GreenhousePlusPlus.WebAPI
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
     {
       app.UseExceptionHandler(env.IsDevelopment() ? "/error-local-development" : "/error");
-      
+
       if (env.IsDevelopment())
       {
         var srcFolder = Path.Combine(Directory.GetCurrentDirectory(), StaticFolder);
