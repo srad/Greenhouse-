@@ -20,7 +20,7 @@ namespace GreenhousePlusPlus.WebAPI.Controllers
 
     public ImagesController(IWebHostEnvironment env)
     {
-      _pipeline = new Pipeline("Static");
+      _pipeline = new Pipeline(Startup.StaticPath);
       _env = env;
     }
 
@@ -29,7 +29,7 @@ namespace GreenhousePlusPlus.WebAPI.Controllers
     {
       var files = _pipeline.ImageManager
         .GetRelativeFilePaths()
-        .Select(file => new FileData { Path = @"/" + file.Replace("\\", "/"), Name = Path.GetFileName(file) })
+        .Select(file => new FileData { Path = @"/" + Startup.StaticFolder + file.Replace("\\", "/"), Name = Path.GetFileName(file) })
         .ToList();
 
       return files;
@@ -64,7 +64,7 @@ namespace GreenhousePlusPlus.WebAPI.Controllers
       var result = _pipeline.Process();
 
       return result
-        .Select(file => new FilterFileInfo { Element = file.Element, Path = @"/" + file.Path.Replace("\\", "/"), Name = Path.GetFileName(file.Path) })
+        .Select(file => new FilterFileInfo { Element = file.Element, Path = @"/" + Startup.StaticFolder + file.Path.Replace("\\", "/"), Name = Path.GetFileName(file.Path) })
         .ToList();
     }
 
@@ -80,14 +80,14 @@ namespace GreenhousePlusPlus.WebAPI.Controllers
       var result = _pipeline.Process();
 
       return result
-        .Select(f => new FilterFileInfo { Element = f.Element, Path = @"/" + f.Path.Replace("\\", "/"), Name = Path.GetFileName(f.Path) })
+        .Select(f => new FilterFileInfo { Element = f.Element, Path = @"/" + Startup.StaticFolder + f.Path.Replace("\\", "/"), Name = Path.GetFileName(f.Path) })
         .ToList();
     }
 
     [HttpDelete("{file}")]
     public void Delete(string file)
     {
-      var m = new ImageManager("Static");
+      var m = new ImageManager(Startup.StaticPath);
       m.Open(file);
       m.Delete();
     }

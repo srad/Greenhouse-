@@ -14,14 +14,16 @@ namespace GreenhousePlusPlusCore
     private readonly ImageListView ImageListView = new ImageListView();
     private readonly MainWindowViewModel MainWindowViewModel = new MainWindowViewModel();
 
-    private readonly Pipeline Pipeline = new Pipeline();
+    private readonly Pipeline Pipeline;
     private bool ImageLoaded = false;
+
+    public static string ImageBase => AppDomain.CurrentDomain.BaseDirectory;
 
     public MainWindow()
     {
       InitializeComponent();
-
-      var images = new ImageManager().GetRelativeFilePaths();
+      Pipeline = new Pipeline(ImageBase);
+      var images = new ImageManager(ImageBase).GetRelativeFilePaths();
       foreach (var image in images)
       {
         ImageListView.AddImage(image);
@@ -84,7 +86,7 @@ namespace GreenhousePlusPlusCore
         {
           var image = sender as System.Windows.Controls.Button;
           var file = (string)image.Tag;
-          var paths = new ImageManager();
+          var paths = new ImageManager(ImageBase);
           paths.Open(file);
           paths.Delete();
           ImageListView.RemoveItem(file);

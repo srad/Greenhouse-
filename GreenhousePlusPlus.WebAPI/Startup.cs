@@ -15,6 +15,9 @@ namespace GreenhousePlusPlus.WebAPI
   public class Startup
   {
     public const string StaticFolder = "Static";
+    public static string StaticPath => Path.Combine(StartupFolder, StaticFolder);
+    public static string StartupFolder => Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
     public Startup(IConfiguration configuration)
     {
       Configuration = configuration;
@@ -48,7 +51,16 @@ namespace GreenhousePlusPlus.WebAPI
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
       app.UseExceptionHandler(env.IsDevelopment() ? "/error-local-development" : "/error");
-
+      
+      if (env.IsDevelopment())
+      {
+        var srcFolder = Path.Combine(Directory.GetCurrentDirectory(), StaticFolder);
+        Directory.CreateDirectory(StaticPath);
+        foreach (var srcPath in Directory.GetFiles(srcFolder))
+        {
+          File.Copy(srcPath, srcPath.Replace(srcPath, srcPath.Replace(srcFolder, StaticPath)), true);
+        }
+      }
       app.UseCors(x => x
         .AllowAnyOrigin()
         .AllowAnyMethod()
@@ -56,7 +68,7 @@ namespace GreenhousePlusPlus.WebAPI
 
       app.UseStaticFiles(new StaticFileOptions
       {
-        FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), StaticFolder)),
+        FileProvider = new PhysicalFileProvider(StaticPath),
         RequestPath = "/static"
       });
 

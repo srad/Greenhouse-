@@ -8,11 +8,6 @@ namespace GreenhousePlusPlus.Core.Vision
     public readonly ImageManager ImageManager;
     public readonly FilterValues FilterValues = new FilterValues();
 
-    public Pipeline()
-    {
-      ImageManager = new ImageManager();
-    }
-
     public Pipeline(string basePath)
     {
       ImageManager = new ImageManager(basePath);

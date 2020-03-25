@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
@@ -12,8 +11,6 @@ namespace GreenhousePlusPlus.Core.Models
 {
   public class ImageManager
   {
-    public static Lazy<string> AssemblyFolder = new Lazy<string>(() => Path.GetDirectoryName(Assembly.GetEntryAssembly().Location.Substring(0, Assembly.GetEntryAssembly().Location.IndexOf("bin\\"))));
-
     public const string ImageDir = "Images";
 
     private readonly string _imageRoot;
@@ -44,12 +41,9 @@ namespace GreenhousePlusPlus.Core.Models
 
     private bool _fileOpened = false;
 
-    public ImageManager() : this(AppDomain.CurrentDomain.BaseDirectory)
-    {}
-
     public ImageManager(string imageRoot)
     {
-      _imageRoot = Path.Combine(AssemblyFolder.Value, imageRoot);
+      _imageRoot = imageRoot;
       Directory.CreateDirectory(BasePath);
       Directory.CreateDirectory(ImagePath);
       Directory.CreateDirectory(ThumbsPath);
@@ -83,24 +77,24 @@ namespace GreenhousePlusPlus.Core.Models
 
     public void Open(string filename)
     {
-      Original = new ImageFile(Path.Combine(ImagePath, filename));
-      Thumb = new ImageFile(Path.Combine(ThumbsPath, filename));
+      Original = new ImageFile(_imageRoot, Path.Combine(ImagePath, filename));
+      Thumb = new ImageFile(_imageRoot, Path.Combine(ThumbsPath, filename));
 
-      HistR = new ImageFile(Path.Combine(HistPath, "r_" + filename));
-      HistG = new ImageFile(Path.Combine(HistPath, "g_" + filename));
-      HistB = new ImageFile(Path.Combine(HistPath, "b_" + filename));
+      HistR = new ImageFile(_imageRoot, Path.Combine(HistPath, "r_" + filename));
+      HistG = new ImageFile(_imageRoot, Path.Combine(HistPath, "g_" + filename));
+      HistB = new ImageFile(_imageRoot, Path.Combine(HistPath, "b_" + filename));
 
       var pngFilename = Path.GetFileNameWithoutExtension(filename) + ".png";
 
-      FilteredGreen = new ImageFile(Path.Combine(FilteredPath, "green_" + pngFilename));
-      FilteredRed = new ImageFile(Path.Combine(FilteredPath, "red_" + pngFilename));
-      Earth = new ImageFile(Path.Combine(SegmentedPath, "earth_" + pngFilename));
-      Leaf = new ImageFile(Path.Combine(SegmentedPath, "leaf_" + pngFilename));
+      FilteredGreen = new ImageFile(_imageRoot, Path.Combine(FilteredPath, "green_" + pngFilename));
+      FilteredRed = new ImageFile(_imageRoot, Path.Combine(FilteredPath, "red_" + pngFilename));
+      Earth = new ImageFile(_imageRoot, Path.Combine(SegmentedPath, "earth_" + pngFilename));
+      Leaf = new ImageFile(_imageRoot, Path.Combine(SegmentedPath, "leaf_" + pngFilename));
 
-      Edge = new ImageFile(Path.Combine(KernelPath, "edge_" + pngFilename));
-      PlantTip = new ImageFile(Path.Combine(KernelPath, "edge_overlay" + pngFilename));
-      Blur = new ImageFile(Path.Combine(KernelPath, "blur_" + pngFilename));
-      Pass = new ImageFile(Path.Combine(KernelPath, "pass_" + pngFilename));
+      Edge = new ImageFile(_imageRoot, Path.Combine(KernelPath, "edge_" + pngFilename));
+      PlantTip = new ImageFile(_imageRoot, Path.Combine(KernelPath, "edge_overlay" + pngFilename));
+      Blur = new ImageFile(_imageRoot, Path.Combine(KernelPath, "blur_" + pngFilename));
+      Pass = new ImageFile(_imageRoot, Path.Combine(KernelPath, "pass_" + pngFilename));
 
       _fileOpened = true;
     }
@@ -111,7 +105,7 @@ namespace GreenhousePlusPlus.Core.Models
       {
         return Directory.EnumerateFiles(ThumbsPath, "*.*", SearchOption.TopDirectoryOnly)
           // Remove full path and skip leading slash
-          .Select(path => path.Replace(AssemblyFolder.Value, "").Substring(1))
+          .Select(path => path.Replace(_imageRoot, ""))
           .Where(s => s.EndsWith(".jpg") || s.EndsWith(".png"));
       }
       return new List<string>();

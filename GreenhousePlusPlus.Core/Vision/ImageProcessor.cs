@@ -28,7 +28,7 @@ namespace GreenhousePlusPlus.Core.Vision
     /// <returns></returns>
     public ImageProcessResult Start(FilterValues thresholds)
     {
-      var filterResult = Filter(thresholds, ImageFile.Original.RelativePath);
+      var filterResult = Filter(thresholds, ImageFile.Original.Path);
 
       filterResult.RedImage.Save(ImageFile.FilteredRed.Path);
       filterResult.GreenImage.Save(ImageFile.FilteredGreen.Path);
