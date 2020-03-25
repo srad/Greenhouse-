@@ -28,7 +28,7 @@ namespace GreenhousePlusPlus.Core.Vision
     /// <returns></returns>
     public ImageProcessResult Start(FilterValues thresholds)
     {
-      var filterResult = Filter(thresholds, ImageFile.Original.Path);
+      var filterResult = Filter(thresholds, ImageFile.Original.RelativePath);
 
       filterResult.RedImage.Save(ImageFile.FilteredRed.Path);
       filterResult.GreenImage.Save(ImageFile.FilteredGreen.Path);
@@ -45,18 +45,18 @@ namespace GreenhousePlusPlus.Core.Vision
 
       return new ImageProcessResult
       {
-        new FilterFileInfo { Path = ImageFile.Original.Path, Element = "original" },
-        new FilterFileInfo { Path = ImageFile.Blur.Path, Element = "blur" },
-        new FilterFileInfo { Path = ImageFile.Earth.Path, Element="earth" },
-        new FilterFileInfo { Path = ImageFile.Edge.Path, Element="edge" },
-        new FilterFileInfo { Path = ImageFile.FilteredGreen.Path, Element="green" },
-        new FilterFileInfo { Path = ImageFile.FilteredRed.Path, Element="red" },
-        new FilterFileInfo { Path = ImageFile.PlantTip.Path, Element="tip" },
-        new FilterFileInfo { Path = ImageFile.Leaf.Path, Element="leaf" },
-        new FilterFileInfo { Path = ImageFile.HistR.Path, Element="hist-red" },
-        new FilterFileInfo { Path = ImageFile.HistG.Path, Element="hist-green" },
-        new FilterFileInfo { Path = ImageFile.HistB.Path, Element="hist-blue" },
-        new FilterFileInfo { Path = ImageFile.Pass.Path, Element="pass" }
+        new FilterFileInfo { Path = ImageFile.Original.RelativePath, Element = "original" },
+        new FilterFileInfo { Path = ImageFile.Blur.RelativePath, Element = "blur" },
+        new FilterFileInfo { Path = ImageFile.Earth.RelativePath, Element="earth" },
+        new FilterFileInfo { Path = ImageFile.Edge.RelativePath, Element="edge" },
+        new FilterFileInfo { Path = ImageFile.FilteredGreen.RelativePath, Element="green" },
+        new FilterFileInfo { Path = ImageFile.FilteredRed.RelativePath, Element="red" },
+        new FilterFileInfo { Path = ImageFile.PlantTip.RelativePath, Element="tip" },
+        new FilterFileInfo { Path = ImageFile.Leaf.RelativePath, Element="leaf" },
+        new FilterFileInfo { Path = ImageFile.HistR.RelativePath, Element="hist-red" },
+        new FilterFileInfo { Path = ImageFile.HistG.RelativePath, Element="hist-green" },
+        new FilterFileInfo { Path = ImageFile.HistB.RelativePath, Element="hist-blue" },
+        new FilterFileInfo { Path = ImageFile.Pass.RelativePath, Element="pass" }
       };
     }
 

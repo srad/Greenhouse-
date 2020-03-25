@@ -14,6 +14,7 @@ namespace GreenhousePlusPlus.WebAPI
 {
   public class Startup
   {
+    public const string StaticFolder = "Static";
     public Startup(IConfiguration configuration)
     {
       Configuration = configuration;
@@ -55,7 +56,7 @@ namespace GreenhousePlusPlus.WebAPI
 
       app.UseStaticFiles(new StaticFileOptions
       {
-        FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "Static")),
+        FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), StaticFolder)),
         RequestPath = "/static"
       });
 

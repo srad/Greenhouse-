@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GreenhousePlusPlus.Core.Models;
+using System;
 using System.ComponentModel;
 using System.Windows.Media.Imaging;
 

@@ -28,7 +28,7 @@ namespace GreenhousePlusPlus.WebAPI.Controllers
     public IEnumerable<FileData> Get()
     {
       var files = _pipeline.ImageManager
-        .GetFiles()
+        .GetRelativeFilePaths()
         .Select(file => new FileData { Path = @"/" + file.Replace("\\", "/"), Name = Path.GetFileName(file) })
         .ToList();
 

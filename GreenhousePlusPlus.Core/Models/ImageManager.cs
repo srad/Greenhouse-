@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
@@ -11,16 +12,18 @@ namespace GreenhousePlusPlus.Core.Models
 {
   public class ImageManager
   {
+    public static Lazy<string> AssemblyFolder = new Lazy<string>(() => Path.GetDirectoryName(Assembly.GetEntryAssembly().Location.Substring(0, Assembly.GetEntryAssembly().Location.IndexOf("bin\\"))));
+
     public const string ImageDir = "Images";
 
-    private readonly string _baseDir;
-    public string BasePath { get => Path.Combine(_baseDir, ImageDir); }
-    public string ImagePath { get => Path.Combine(_baseDir, ImageDir, "Original"); }
-    public string ThumbsPath { get => Path.Combine(_baseDir, ImageDir, "Thumbs"); }
-    public string FilteredPath { get => Path.Combine(_baseDir, ImageDir, "Filtered"); }
-    public string SegmentedPath { get => Path.Combine(_baseDir, ImageDir, "Segmented"); }
-    public string HistPath { get => Path.Combine(_baseDir, ImageDir, "Hist"); }
-    public string KernelPath { get => Path.Combine(_baseDir, ImageDir, "Kernels"); }
+    private readonly string _imageRoot;
+    public string BasePath { get => Path.Combine(_imageRoot, ImageDir); }
+    public string ImagePath { get => Path.Combine(_imageRoot, ImageDir, "Original"); }
+    public string ThumbsPath { get => Path.Combine(_imageRoot, ImageDir, "Thumbs"); }
+    public string FilteredPath { get => Path.Combine(_imageRoot, ImageDir, "Filtered"); }
+    public string SegmentedPath { get => Path.Combine(_imageRoot, ImageDir, "Segmented"); }
+    public string HistPath { get => Path.Combine(_imageRoot, ImageDir, "Hist"); }
+    public string KernelPath { get => Path.Combine(_imageRoot, ImageDir, "Kernels"); }
 
     public string Filename;
     public ImageFile Original;
@@ -44,9 +47,9 @@ namespace GreenhousePlusPlus.Core.Models
     public ImageManager() : this(AppDomain.CurrentDomain.BaseDirectory)
     {}
 
-    public ImageManager(string baseDir)
+    public ImageManager(string imageRoot)
     {
-      this._baseDir = baseDir;
+      _imageRoot = Path.Combine(AssemblyFolder.Value, imageRoot);
       Directory.CreateDirectory(BasePath);
       Directory.CreateDirectory(ImagePath);
       Directory.CreateDirectory(ThumbsPath);
@@ -102,12 +105,14 @@ namespace GreenhousePlusPlus.Core.Models
       _fileOpened = true;
     }
 
-    public IEnumerable<string> GetFiles()
+    public IEnumerable<string> GetRelativeFilePaths()
     {
       if (Directory.Exists(BasePath))
       {
         return Directory.EnumerateFiles(ThumbsPath, "*.*", SearchOption.TopDirectoryOnly)
-              .Where(s => s.EndsWith(".jpg") || s.EndsWith(".png"));
+          // Remove full path and skip leading slash
+          .Select(path => path.Replace(AssemblyFolder.Value, "").Substring(1))
+          .Where(s => s.EndsWith(".jpg") || s.EndsWith(".png"));
       }
       return new List<string>();
     }

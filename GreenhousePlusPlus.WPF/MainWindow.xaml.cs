@@ -1,4 +1,6 @@
-﻿using GreenhousePlusPlusCore.ViewModels;
+﻿using GreenhousePlusPlus.Core.Models;
+using GreenhousePlusPlus.Core.Vision;
+using GreenhousePlusPlusCore.ViewModels;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
@@ -19,7 +21,7 @@ namespace GreenhousePlusPlusCore
     {
       InitializeComponent();
 
-      var images = new ImageManager().GetFiles();
+      var images = new ImageManager().GetRelativeFilePaths();
       foreach (var image in images)
       {
         ImageListView.AddImage(image);

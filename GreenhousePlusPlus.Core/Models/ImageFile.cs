@@ -21,7 +21,8 @@ namespace GreenhousePlusPlus.Core.Models
 
   public class ImageFile
   {
-    public string Path;
+    public readonly string Path;
+    public string RelativePath => Path.Replace(ImageManager.AssemblyFolder.Value, "").Substring(1);
     public Lazy<IImageInfo> Info;
 
     public ImageFile(string path)
