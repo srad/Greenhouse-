@@ -20,5 +20,10 @@
     <Resource Include="Static\leaf.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Static\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>
