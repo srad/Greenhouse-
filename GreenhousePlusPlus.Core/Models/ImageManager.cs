@@ -40,12 +40,18 @@ namespace GreenhousePlusPlus.Core.Models
     public ImageFile Blur;
     public ImageFile Pass;
 
+    private static bool _created = false;
+
     private bool _fileOpened = false;
 
     private NLog.Logger _logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
 
     private void MkDir(string name)
     {
+      if (_created)
+      {
+        return;
+      }
       try
       {
         _logger.Info($"Creating directory: {name}");
@@ -54,7 +60,7 @@ namespace GreenhousePlusPlus.Core.Models
       catch(Exception ex)
       {
         _logger.Error(ex.Message);
-        throw;
+        throw ex;
       }
     }
 
@@ -69,6 +75,7 @@ namespace GreenhousePlusPlus.Core.Models
       MkDir(HistPath);
       MkDir(SegmentedPath);
       MkDir(KernelPath);
+      _created = true;
     }
 
     public void Create(string srcFile)

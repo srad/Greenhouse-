@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Mime;
 using GreenhousePlusPlus.WebAPI.Models;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLog.Web;
 
 namespace GreenhousePlusPlus.WebAPI
 {
@@ -18,6 +20,8 @@ namespace GreenhousePlusPlus.WebAPI
     public const string StaticFolder = "Static";
     public static string StaticPath => Path.Combine(StartupFolder, StaticFolder);
     public static string StartupFolder => Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+    private NLog.Logger _logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
 
     public Startup(IConfiguration configuration)
     {
@@ -52,6 +56,12 @@ namespace GreenhousePlusPlus.WebAPI
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
     {
       app.UseExceptionHandler(env.IsDevelopment() ? "/error-local-development" : "/error");
+      app.UseExceptionHandler(a => a.Run(async context =>
+      {
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature.Error;
+        _logger.Error(exception.Message);
+      }));
 
       if (env.IsDevelopment())
       {
@@ -62,6 +72,7 @@ namespace GreenhousePlusPlus.WebAPI
           File.Copy(srcPath, srcPath.Replace(srcPath, srcPath.Replace(srcFolder, StaticPath)), true);
         }
       }
+
       app.UseCors(x => x
         .AllowAnyOrigin()
         .AllowAnyMethod()
