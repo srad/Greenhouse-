@@ -15,13 +15,46 @@ namespace GreenhousePlusPlus.Core.Models
     public const string ImageDir = "Images";
 
     private readonly string _imageRoot;
-    public string BasePath { get => Path.Combine(_imageRoot, ImageDir); }
-    public string ImagePath { get => Path.Combine(_imageRoot, ImageDir, "Original"); }
-    public string ThumbsPath { get => Path.Combine(_imageRoot, ImageDir, "Thumbs"); }
-    public string FilteredPath { get => Path.Combine(_imageRoot, ImageDir, "Filtered"); }
-    public string SegmentedPath { get => Path.Combine(_imageRoot, ImageDir, "Segmented"); }
-    public string HistPath { get => Path.Combine(_imageRoot, ImageDir, "Hist"); }
-    public string KernelPath { get => Path.Combine(_imageRoot, ImageDir, "Kernels"); }
+
+    public string BasePath
+    {
+      get => Path.Combine(_imageRoot, ImageDir);
+    }
+
+    public string ImagePath
+    {
+      get => Path.Combine(_imageRoot, ImageDir, "Original");
+    }
+
+    public string ThumbsPath
+    {
+      get => Path.Combine(_imageRoot, ImageDir, "Thumbs");
+    }
+
+    public string FilteredPath
+    {
+      get => Path.Combine(_imageRoot, ImageDir, "Filtered");
+    }
+
+    public string SegmentedPath
+    {
+      get => Path.Combine(_imageRoot, ImageDir, "Segmented");
+    }
+
+    public string HistPath
+    {
+      get => Path.Combine(_imageRoot, ImageDir, "Hist");
+    }
+
+    public string KernelPath
+    {
+      get => Path.Combine(_imageRoot, ImageDir, "Kernels");
+    }
+
+    public string PipelinePath
+    {
+      get => Path.Combine(_imageRoot, ImageDir, "Pipeline");
+    }
 
     public string Filename;
     public ImageFile Original;
@@ -40,11 +73,13 @@ namespace GreenhousePlusPlus.Core.Models
     public ImageFile Blur;
     public ImageFile Pass;
 
+    public ImageFile WholePipeline;
+
     private static bool _created = false;
 
     private bool _fileOpened = false;
 
-    private NLog.Logger _logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+    private readonly NLog.Logger _logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
 
     private void MkDir(string name)
     {
@@ -52,12 +87,13 @@ namespace GreenhousePlusPlus.Core.Models
       {
         return;
       }
+
       try
       {
         _logger.Info($"Creating directory: {name}");
         Directory.CreateDirectory(name);
       }
-      catch(Exception ex)
+      catch (Exception ex)
       {
         _logger.Error(ex.Message);
         throw ex;
@@ -66,7 +102,6 @@ namespace GreenhousePlusPlus.Core.Models
 
     public ImageManager(string imageRoot)
     {
-
       _imageRoot = imageRoot;
       MkDir(BasePath);
       MkDir(ImagePath);
@@ -75,6 +110,7 @@ namespace GreenhousePlusPlus.Core.Models
       MkDir(HistPath);
       MkDir(SegmentedPath);
       MkDir(KernelPath);
+      MkDir(PipelinePath);
       _created = true;
     }
 
@@ -89,8 +125,9 @@ namespace GreenhousePlusPlus.Core.Models
       {
         using (var target = image.Clone(x => x.Resize(0, 480)))
         {
-          target.Save(destFile, new JpegEncoder{Quality = 80});
+          target.Save(destFile, new JpegEncoder {Quality = 80});
         }
+
         using (var thumb = image.Clone(x => x.Resize(0, 200)))
         {
           thumb.Save(thumbFile);
@@ -121,6 +158,8 @@ namespace GreenhousePlusPlus.Core.Models
       Blur = new ImageFile(_imageRoot, Path.Combine(KernelPath, "blur_" + pngFilename));
       Pass = new ImageFile(_imageRoot, Path.Combine(KernelPath, "pass_" + pngFilename));
 
+      WholePipeline = new ImageFile(_imageRoot, Path.Combine(PipelinePath, pngFilename));
+
       _fileOpened = true;
     }
 
@@ -133,6 +172,7 @@ namespace GreenhousePlusPlus.Core.Models
           .Select(path => path.Replace(_imageRoot, ""))
           .Where(s => s.EndsWith(".jpg") || s.EndsWith(".png"));
       }
+
       return new List<string>();
     }
 
@@ -142,6 +182,7 @@ namespace GreenhousePlusPlus.Core.Models
       {
         throw new FileNotFoundException("No file to delete");
       }
+
       Original.Delete();
       Thumb.Delete();
       FilteredGreen.Delete();
@@ -155,6 +196,7 @@ namespace GreenhousePlusPlus.Core.Models
       PlantTip.Delete();
       Blur.Delete();
       Pass.Delete();
+      WholePipeline.Delete();
     }
   }
 }

@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using GreenhousePlusPlus.Core.Models;
 using GreenhousePlusPlus.Core.Vision;
 using GreenhousePlusPlus.WebAPI.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace GreenhousePlusPlus.WebAPI.Controllers
 {
@@ -29,7 +32,8 @@ namespace GreenhousePlusPlus.WebAPI.Controllers
     {
       var files = _pipeline.ImageManager
         .GetRelativeFilePaths()
-        .Select(file => new FileData { Path = @"/" + Startup.StaticFolder + file.Replace("\\", "/"), Name = Path.GetFileName(file) })
+        .Select(file => new FileData
+          {Path = @"/" + Startup.StaticFolder + file.Replace("\\", "/"), Name = Path.GetFileName(file)})
         .ToList();
 
       return files;
@@ -41,14 +45,14 @@ namespace GreenhousePlusPlus.WebAPI.Controllers
     /// <param name="upload"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<IEnumerable<FilterFileInfo>> Post([FromForm]SingleFileUpload upload)
+    public async Task<ImageProcessResult> Post([FromForm] SingleFileUpload upload)
     {
-      var mb = ((double)upload.File.Length / 1024) / 1024;
+      var mb = ((double) upload.File.Length / 1024) / 1024;
       if (mb > MaxUploadSizeMb)
       {
         throw new NotSupportedException($"The upload exceeds the maximum size of 3MB");
       }
-      
+
       // full path to file in temp location
       var tmpFile = Path.GetTempFileName();
 
@@ -58,30 +62,54 @@ namespace GreenhousePlusPlus.WebAPI.Controllers
         {
           await upload.File.CopyToAsync(stream);
         }
+
         _pipeline.Create(tmpFile);
       }
 
       var result = _pipeline.Process();
 
-      return result
-        .Select(file => new FilterFileInfo { Element = file.Element, Path = @"/" + Startup.StaticFolder + file.Path.Replace("\\", "/"), Name = Path.GetFileName(file.Path) })
+      result.Files = result.Files
+        .Select(file => new FilterFileInfo
+        {
+          Element = file.Element, Path = @"/" + Startup.StaticFolder + file.Path.Replace("\\", "/"),
+          Name = Path.GetFileName(file.Path)
+        })
         .ToList();
+
+      return result;
     }
 
     /// <summary>
     /// Load and process an existing file.
     /// </summary>
     /// <param name="file"></param>
+    /// <param name="open"></param>
     /// <returns></returns>
-    [HttpPut("{file}")]
-    public IEnumerable<FilterFileInfo> Open(string file)
+    [HttpPut]
+    public IActionResult Open([FromBody] OpenImageRequest open)
     {
-      _pipeline.Open(file);
+      if (!ModelState.IsValid)
+      {
+        var errors = (from state in ModelState from error in state.Value.Errors select error.ErrorMessage).ToList();
+        return BadRequest(new {Errors = errors});
+      }
+
+      _pipeline.FilterValues.BlurRounds = open.BlurRounds;
+      _pipeline.FilterValues.ThetaTheshold = open.ThetaTheshold;
+      _pipeline.FilterValues.WhiteThreshold = open.WhiteThreshold;
+      _pipeline.FilterValues.ScanlineInterpolationWidth = open.ScanlineInterpolationWidth;
+      _pipeline.Open(open.File);
       var result = _pipeline.Process();
 
-      return result
-        .Select(f => new FilterFileInfo { Element = f.Element, Path = @"/" + Startup.StaticFolder + f.Path.Replace("\\", "/"), Name = Path.GetFileName(f.Path) })
+      result.Files = result.Files
+        .Select(f => new FilterFileInfo
+        {
+          Element = f.Element, Path = @"/" + Startup.StaticFolder + f.Path.Replace("\\", "/"),
+          Name = Path.GetFileName(f.Path)
+        })
         .ToList();
+
+      return Ok(result);
     }
 
     [HttpDelete("{file}")]

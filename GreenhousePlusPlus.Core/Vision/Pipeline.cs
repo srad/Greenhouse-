@@ -6,7 +6,7 @@ namespace GreenhousePlusPlus.Core.Vision
   {
     private ImageProcessor _imageProcessor;
     public readonly ImageManager ImageManager;
-    public readonly FilterValues FilterValues = new FilterValues();
+    public FilterValues FilterValues = new FilterValues();
 
     public Pipeline(string basePath)
     {

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using GreenhousePlusPlus.Core.Models;
+using Microsoft.VisualBasic;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
@@ -42,21 +43,27 @@ namespace GreenhousePlusPlus.Core.Vision
       filterResult.Histogram.HistogramR.Save(ImageFile.HistR.Path);
       filterResult.Histogram.HistogramG.Save(ImageFile.HistG.Path);
       filterResult.Histogram.HistogramB.Save(ImageFile.HistB.Path);
+      filterResult.WholePipeline.Save(ImageFile.WholePipeline.Path);
 
       return new ImageProcessResult
       {
-        new FilterFileInfo { Path = ImageFile.Original.RelativePath, Element = "original" },
-        new FilterFileInfo { Path = ImageFile.Blur.RelativePath, Element = "blur" },
-        new FilterFileInfo { Path = ImageFile.Earth.RelativePath, Element="earth" },
-        new FilterFileInfo { Path = ImageFile.Edge.RelativePath, Element="edge" },
-        new FilterFileInfo { Path = ImageFile.FilteredGreen.RelativePath, Element="green" },
-        new FilterFileInfo { Path = ImageFile.FilteredRed.RelativePath, Element="red" },
-        new FilterFileInfo { Path = ImageFile.PlantTip.RelativePath, Element="tip" },
-        new FilterFileInfo { Path = ImageFile.Leaf.RelativePath, Element="leaf" },
-        new FilterFileInfo { Path = ImageFile.HistR.RelativePath, Element="hist-red" },
-        new FilterFileInfo { Path = ImageFile.HistG.RelativePath, Element="hist-green" },
-        new FilterFileInfo { Path = ImageFile.HistB.RelativePath, Element="hist-blue" },
-        new FilterFileInfo { Path = ImageFile.Pass.RelativePath, Element="pass" }
+        FilterValues = thresholds,
+        Files = new List<FilterFileInfo>()
+        {
+          new FilterFileInfo {Path = ImageFile.WholePipeline.RelativePath, Element = "pipeline"},
+          new FilterFileInfo {Path = ImageFile.Original.RelativePath, Element = "original"},
+          new FilterFileInfo {Path = ImageFile.Blur.RelativePath, Element = "blur"},
+          new FilterFileInfo {Path = ImageFile.Earth.RelativePath, Element = "earth"},
+          new FilterFileInfo {Path = ImageFile.Edge.RelativePath, Element = "edge"},
+          new FilterFileInfo {Path = ImageFile.FilteredGreen.RelativePath, Element = "green"},
+          new FilterFileInfo {Path = ImageFile.FilteredRed.RelativePath, Element = "red"},
+          new FilterFileInfo {Path = ImageFile.PlantTip.RelativePath, Element = "tip"},
+          new FilterFileInfo {Path = ImageFile.Leaf.RelativePath, Element = "leaf"},
+          new FilterFileInfo {Path = ImageFile.HistR.RelativePath, Element = "hist-red"},
+          new FilterFileInfo {Path = ImageFile.HistG.RelativePath, Element = "hist-green"},
+          new FilterFileInfo {Path = ImageFile.HistB.RelativePath, Element = "hist-blue"},
+          new FilterFileInfo {Path = ImageFile.Pass.RelativePath, Element = "pass"}
+        }
       };
     }
 
@@ -82,7 +89,7 @@ namespace GreenhousePlusPlus.Core.Vision
 
       // Create threads
       var threads = Environment.ProcessorCount;
-      double chunks = (double)info.Height / threads;
+      double chunks = (double) info.Height / threads;
 
       Parallel.For(0, threads, i =>
       {
@@ -90,9 +97,9 @@ namespace GreenhousePlusPlus.Core.Vision
         var rect = new FilterRect
         {
           x = 1,
-          y = (int)(i * chunks) + 1,
+          y = (int) (i * chunks) + 1,
           endx = info.Width - 1,
-          endy = (int)((i + 1) * chunks) + (i == (threads - 1) ? -1 : +1)
+          endy = (int) ((i + 1) * chunks) + (i == (threads - 1) ? -1 : +1)
         };
         results.Add(ApplyFilters(filters, srcImage, destImages, rect));
       });
@@ -102,6 +109,32 @@ namespace GreenhousePlusPlus.Core.Vision
         srcFilter: destImages[ImageIdx.Passfilter],
         destImage: destImages[ImageIdx.LongestEdgeOverlay],
         avgWindow: filters.ScanlineInterpolationWidth);
+
+      // Processing now completed
+
+      // Copy all filtered images into one
+      var pipelineImage = new Image<Rgba32>(4 * info.Width, info.Height);
+      var stages = new Image<Rgba32>[]
+      {
+        destImages[ImageIdx.EdgeFilter],
+        destImages[ImageIdx.Blur],
+        destImages[ImageIdx.Passfilter],
+        destImages[ImageIdx.LongestEdgeOverlay]
+      };
+
+      for (int y = 0; y < info.Height; y++)
+      {
+        var targetRow = pipelineImage.GetPixelRowSpan(y);
+        // Copy all stages rows into one giant column side by side
+        for (int i = 0; i < stages.Length; i++)
+        {
+          var srcRow = stages[i].GetPixelRowSpan(y);
+          for (int x = 0; x < info.Width; x++)
+          {
+            targetRow[x + i * info.Width] = srcRow[x];
+          }
+        }
+      }
 
       return new FilterResult
       {
@@ -113,11 +146,13 @@ namespace GreenhousePlusPlus.Core.Vision
         EdgeImage = destImages[ImageIdx.EdgeFilter],
         PassImage = destImages[ImageIdx.Passfilter],
         BlurImage = destImages[ImageIdx.Blur],
-        PlantTipImage = destImages[ImageIdx.LongestEdgeOverlay]
+        PlantTipImage = destImages[ImageIdx.LongestEdgeOverlay],
+        WholePipeline = pipelineImage
       };
     }
 
-    private static Histogram ApplyFilters(FilterValues filterValues, in Image<Rgba32> srcImage, Image<Rgba32>[] images, FilterRect rect)
+    private static Histogram ApplyFilters(FilterValues filterValues, in Image<Rgba32> srcImage, Image<Rgba32>[] images,
+      FilterRect rect)
     {
       // This is all one run for performance reasons because instead of n runs it needs just one
       var h = SobelFilterAndSegmentation(srcImage, images, filterValues, rect);
@@ -138,7 +173,9 @@ namespace GreenhousePlusPlus.Core.Vision
     }
 
     #region filters
-    private static Histogram SobelFilterAndSegmentation(in Image<Rgba32> srcImage, Image<Rgba32>[] images, FilterValues filterValues, FilterRect rect)
+
+    private static Histogram SobelFilterAndSegmentation(in Image<Rgba32> srcImage, Image<Rgba32>[] images,
+      FilterValues filterValues, FilterRect rect)
     {
       var h = new Histogram();
       double epsilon = 1.0;
@@ -164,17 +201,17 @@ namespace GreenhousePlusPlus.Core.Vision
 
           // Sobel operator
           var pixel_x =
-              // Horizontal difference between right and left pixel row adjacent pixels also
-              // Row above
-              topSpan[x + 1].R - topSpan[x - 1].R
+            // Horizontal difference between right and left pixel row adjacent pixels also
+            // Row above
+            topSpan[x + 1].R - topSpan[x - 1].R
             // Some row
             + (2 * rowSpan[x + 1].R - 2 * rowSpan[x - 1].R)
             // Row below
             + (bottomSpan[x + 1].R - bottomSpan[x - 1].R);
 
           var pixel_y =
-              // Vertical difference between bottom and top row for all positions: x-1, x, x+1
-              bottomSpan[x - 1].R - topSpan[x - 1].R
+            // Vertical difference between bottom and top row for all positions: x-1, x, x+1
+            bottomSpan[x - 1].R - topSpan[x - 1].R
             // Some row
             + (2 * bottomSpan[x].R - 2 * topSpan[x].R)
             // Row below
@@ -188,8 +225,9 @@ namespace GreenhousePlusPlus.Core.Vision
             byte val = 0;
             if (mag < 60)
             {
-              val = (byte)(255 - mag);
+              val = (byte) (255 - mag);
             }
+
             outputEdgeSpan[x] = new Rgba32(val, val, val);
           }
           else
@@ -217,6 +255,7 @@ namespace GreenhousePlusPlus.Core.Vision
             outputLeafSpan[x] = Rgba32.Transparent;
             outputRedSpan[x] = new Rgba32(130, 69, 10);
           }
+
           if (!greenDominant)
           {
             outputGreenSpan[x] = Rgba32.Transparent;
@@ -230,10 +269,12 @@ namespace GreenhousePlusPlus.Core.Vision
           }
         }
       }
+
       return h;
     }
 
-    private static void VerticalBlur(in Image<Rgba32> srcImage, Image<Rgba32> destImage, int blurRounds, FilterRect rect)
+    private static void VerticalBlur(in Image<Rgba32> srcImage, Image<Rgba32> destImage, int blurRounds,
+      FilterRect rect)
     {
       var blurredImage = srcImage.Clone();
       for (int z = 0; z < blurRounds; z++)
@@ -246,15 +287,17 @@ namespace GreenhousePlusPlus.Core.Vision
           var destRowSpan = destImage.GetPixelRowSpan(y);
           for (int x = rect.x; x < rect.endx; x++)
           {
-            var blur = (byte)((topSpan[x].R + rowSpan[x].R + bottomSpan[x].R) / 3.0);
+            var blur = (byte) ((topSpan[x].R + rowSpan[x].R + bottomSpan[x].R) / 3.0);
             destRowSpan[x] = new Rgba32(blur, blur, blur, 255);
           }
         }
+
         blurredImage = destImage.Clone();
       }
     }
 
-    private static void Highpass(in Image<Rgba32> srcImage, Image<Rgba32> destImage, int whiteThreshold, FilterRect rect)
+    private static void Highpass(in Image<Rgba32> srcImage, Image<Rgba32> destImage, int whiteThreshold,
+      FilterRect rect)
     {
       for (int y = rect.y; y < rect.endy; y++)
       {
@@ -267,6 +310,7 @@ namespace GreenhousePlusPlus.Core.Vision
           {
             col = 255;
           }
+
           destRowSpan[x] = new Rgba32(col, col, col, 255);
         }
       }
@@ -280,11 +324,14 @@ namespace GreenhousePlusPlus.Core.Vision
     /// <param name="srcFilter"></param>
     /// <param name="destImage"></param>
     /// <param name="avgWindow"></param>
-    private static void LongestVerticalLineCount(in Image<Rgba32> srcImage, in Image<Rgba32> srcFilter, Image<Rgba32> destImage, int avgWindow)
+    private static void LongestVerticalLineCount(in Image<Rgba32> srcImage, in Image<Rgba32> srcFilter,
+      Image<Rgba32> destImage, int avgWindow)
     {
+      // Lowpass filter for the average
+      double minValue = ((avgWindow * 2.0 + 1.0) * 255.0) * 0.25;
       // Copy image
       // destImage = srcImage.Clone(); <--- Why doesnt this work?
-      for(int y=0; y < srcImage.Height; y++)
+      for (int y = 0; y < srcImage.Height; y++)
       {
         var srcRowSpan = srcImage.GetPixelRowSpan(y);
         var destRowSpan = destImage.GetPixelRowSpan(y);
@@ -310,18 +357,15 @@ namespace GreenhousePlusPlus.Core.Vision
           {
             sum += srcFilter[x + k, y].R;
           }
+
           double avg = sum / (2 * avgWindow + 1);
 
-          // Lowpass filter: If not really white then count it
-          vCount[x, y] = false;
-          if (avg < 230)
-          {
-            vCount[x, y] = true;
-          }
+          // Low pass filter: If not really white then count it
+          vCount[x, y] = avg < minValue;
         }
       }
 
-      var maxCol = new ColCounter { X = 0, Y = 0, Length = 0 };
+      var maxCol = new ColCounter {X = 0, Y = 0, Length = 0};
       // Column-wise longest line
       for (int x = 0; x < w; x++)
       {
@@ -340,6 +384,7 @@ namespace GreenhousePlusPlus.Core.Vision
               maxCol.Y = y - colSum;
               maxCol.Length = colSum;
             }
+
             colSum = 0;
           }
         }
@@ -354,7 +399,7 @@ namespace GreenhousePlusPlus.Core.Vision
         for (int x = maxCol.X - 2; x < maxCol.X + 2; x++)
         {
           var c = destImage[x, y];
-          destRowSpan[x] = new Rgba32((float)200 / 255, ((float)c.G / 2) / 255, ((float)c.B / 2) / 255);
+          destRowSpan[x] = new Rgba32((float) 200 / 255, ((float) c.G / 2) / 255, ((float) c.B / 2) / 255);
         }
 
         // Horizontal line at the end of the line
@@ -363,11 +408,12 @@ namespace GreenhousePlusPlus.Core.Vision
           for (int x = 0; x < w; x++)
           {
             var c = destImage[x, y];
-            destRowSpan[x] = new Rgba32((float)200 / 255, ((float)c.G / 2) / 255, ((float)c.B / 2) / 255);
+            destRowSpan[x] = new Rgba32((float) 200 / 255, ((float) c.G / 2) / 255, ((float) c.B / 2) / 255);
           }
         }
       }
     }
+
     #endregion
   }
 }

@@ -81,7 +81,12 @@ namespace GreenhousePlusPlus.WebAPI
       app.UseStaticFiles(new StaticFileOptions
       {
         FileProvider = new PhysicalFileProvider(StaticPath),
-        RequestPath = "/static"
+        RequestPath = "/static",
+        OnPrepareResponse = context =>
+        {
+          context.Context.Response.Headers.Add("Cache-Control", "no-cache, no-store");
+          context.Context.Response.Headers.Add("Expires", "-1");
+        }
       });
 
       app.UseRouting();

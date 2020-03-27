@@ -14,6 +14,7 @@ namespace GreenhousePlusPlus.Core.Models
     public Image PlantTipImage;
     public Image BlurImage;
     public Image PassImage;
+    public Image WholePipeline;
     public Histogram Histogram;
     public Histogram LeafHistogram;
     public Histogram EarthHistogram;
@@ -26,7 +27,9 @@ namespace GreenhousePlusPlus.Core.Models
     public string Path { get; set; }
   }
 
-  public class ImageProcessResult : List<FilterFileInfo>
+  public class ImageProcessResult
   {
+    public FilterValues FilterValues { get; set; }
+    public List<FilterFileInfo> Files { get; set; }
   }
 }
