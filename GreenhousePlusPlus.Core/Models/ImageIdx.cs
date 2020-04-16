@@ -10,6 +10,7 @@
       EdgeFilter = 4,
       Blur = 5,
       Passfilter = 6,
-      LongestEdgeOverlay = 7;
+      HInterpolte = 7,
+      LongestEdgeOverlay = 8;
   }
 }

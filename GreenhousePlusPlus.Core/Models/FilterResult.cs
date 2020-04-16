@@ -15,6 +15,7 @@ namespace GreenhousePlusPlus.Core.Models
     public Image BlurImage;
     public Image PassImage;
     public Image WholePipeline;
+    public Image HInterpolateImage;
     public Histogram Histogram;
     public Histogram LeafHistogram;
     public Histogram EarthHistogram;

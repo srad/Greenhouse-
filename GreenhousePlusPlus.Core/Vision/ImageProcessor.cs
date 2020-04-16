@@ -13,11 +13,11 @@ namespace GreenhousePlusPlus.Core.Vision
 {
   public class ImageProcessor
   {
-    private readonly ImageManager ImageFile;
+    private readonly ImageManager _imageFile;
 
     public ImageProcessor(ImageManager imageManager)
     {
-      this.ImageFile = imageManager;
+      _imageFile = imageManager;
     }
 
     /// <summary>
@@ -29,40 +29,42 @@ namespace GreenhousePlusPlus.Core.Vision
     /// <returns></returns>
     public ImageProcessResult Start(FilterValues thresholds)
     {
-      var filterResult = Filter(thresholds, ImageFile.Original.Path);
+      var filterResult = Filter(thresholds, _imageFile.Original.Path);
 
-      filterResult.RedImage.Save(ImageFile.FilteredRed.Path);
-      filterResult.GreenImage.Save(ImageFile.FilteredGreen.Path);
-      filterResult.LeafImage.Save(ImageFile.Leaf.Path);
-      filterResult.EarthImage.Save(ImageFile.Earth.Path);
-      filterResult.EdgeImage.Save(ImageFile.Edge.Path);
-      filterResult.PlantTipImage.Save(ImageFile.PlantTip.Path);
-      filterResult.BlurImage.Save(ImageFile.Blur.Path);
-      filterResult.PassImage.Save(ImageFile.Pass.Path);
+      filterResult.RedImage.Save(_imageFile.FilteredRed.Path);
+      filterResult.GreenImage.Save(_imageFile.FilteredGreen.Path);
+      filterResult.LeafImage.Save(_imageFile.Leaf.Path);
+      filterResult.EarthImage.Save(_imageFile.Earth.Path);
+      filterResult.EdgeImage.Save(_imageFile.Edge.Path);
+      filterResult.PlantTipImage.Save(_imageFile.PlantTip.Path);
+      filterResult.BlurImage.Save(_imageFile.Blur.Path);
+      filterResult.PassImage.Save(_imageFile.Pass.Path);
+      filterResult.HInterpolateImage.Save(_imageFile.HInterpolate.Path);
       filterResult.Histogram.Draw(filterResult, false, 256, 200);
-      filterResult.Histogram.HistogramR.Save(ImageFile.HistR.Path);
-      filterResult.Histogram.HistogramG.Save(ImageFile.HistG.Path);
-      filterResult.Histogram.HistogramB.Save(ImageFile.HistB.Path);
-      filterResult.WholePipeline.Save(ImageFile.WholePipeline.Path);
+      filterResult.Histogram.HistogramR.Save(_imageFile.HistR.Path);
+      filterResult.Histogram.HistogramG.Save(_imageFile.HistG.Path);
+      filterResult.Histogram.HistogramB.Save(_imageFile.HistB.Path);
+      filterResult.WholePipeline.Save(_imageFile.WholePipeline.Path);
 
       return new ImageProcessResult
       {
         FilterValues = thresholds,
         Files = new List<FilterFileInfo>()
         {
-          new FilterFileInfo {Path = ImageFile.WholePipeline.RelativePath, Element = "pipeline"},
-          new FilterFileInfo {Path = ImageFile.Original.RelativePath, Element = "original"},
-          new FilterFileInfo {Path = ImageFile.Blur.RelativePath, Element = "blur"},
-          new FilterFileInfo {Path = ImageFile.Earth.RelativePath, Element = "earth"},
-          new FilterFileInfo {Path = ImageFile.Edge.RelativePath, Element = "edge"},
-          new FilterFileInfo {Path = ImageFile.FilteredGreen.RelativePath, Element = "green"},
-          new FilterFileInfo {Path = ImageFile.FilteredRed.RelativePath, Element = "red"},
-          new FilterFileInfo {Path = ImageFile.PlantTip.RelativePath, Element = "tip"},
-          new FilterFileInfo {Path = ImageFile.Leaf.RelativePath, Element = "leaf"},
-          new FilterFileInfo {Path = ImageFile.HistR.RelativePath, Element = "hist-red"},
-          new FilterFileInfo {Path = ImageFile.HistG.RelativePath, Element = "hist-green"},
-          new FilterFileInfo {Path = ImageFile.HistB.RelativePath, Element = "hist-blue"},
-          new FilterFileInfo {Path = ImageFile.Pass.RelativePath, Element = "pass"}
+          new FilterFileInfo {Path = _imageFile.WholePipeline.RelativePath, Element = "pipeline"},
+          new FilterFileInfo {Path = _imageFile.Original.RelativePath, Element = "original"},
+          new FilterFileInfo {Path = _imageFile.Blur.RelativePath, Element = "blur"},
+          new FilterFileInfo {Path = _imageFile.Earth.RelativePath, Element = "earth"},
+          new FilterFileInfo {Path = _imageFile.Edge.RelativePath, Element = "edge"},
+          new FilterFileInfo {Path = _imageFile.FilteredGreen.RelativePath, Element = "green"},
+          new FilterFileInfo {Path = _imageFile.FilteredRed.RelativePath, Element = "red"},
+          new FilterFileInfo {Path = _imageFile.PlantTip.RelativePath, Element = "tip"},
+          new FilterFileInfo {Path = _imageFile.Leaf.RelativePath, Element = "leaf"},
+          new FilterFileInfo {Path = _imageFile.HInterpolate.RelativePath, Element = "hinterpolate"},
+          new FilterFileInfo {Path = _imageFile.HistR.RelativePath, Element = "hist-red"},
+          new FilterFileInfo {Path = _imageFile.HistG.RelativePath, Element = "hist-green"},
+          new FilterFileInfo {Path = _imageFile.HistB.RelativePath, Element = "hist-blue"},
+          new FilterFileInfo {Path = _imageFile.Pass.RelativePath, Element = "pass"}
         }
       };
     }
@@ -70,7 +72,7 @@ namespace GreenhousePlusPlus.Core.Vision
     public static FilterResult Filter(FilterValues filters, string path)
     {
       var results = new List<Histogram>();
-      var filterCount = 8;
+      var filterCount = 9;
 
       var destImages = new Image<Rgba32>[filterCount];
       var srcImage = Image.Load<Rgba32>(path);
@@ -107,20 +109,22 @@ namespace GreenhousePlusPlus.Core.Vision
       LongestVerticalLineCount(
         srcImage: srcImage,
         srcFilter: destImages[ImageIdx.Passfilter],
+        hinterpolateImage: destImages[ImageIdx.HInterpolte],
         destImage: destImages[ImageIdx.LongestEdgeOverlay],
         avgWindow: filters.ScanlineInterpolationWidth);
 
       // Processing now completed
 
       // Copy all filtered images into one
-      var pipelineImage = new Image<Rgba32>(4 * info.Width, info.Height);
       var stages = new Image<Rgba32>[]
       {
         destImages[ImageIdx.EdgeFilter],
         destImages[ImageIdx.Blur],
         destImages[ImageIdx.Passfilter],
+        destImages[ImageIdx.HInterpolte],
         destImages[ImageIdx.LongestEdgeOverlay]
       };
+      var pipelineImage = new Image<Rgba32>(stages.Length * info.Width, info.Height);
 
       for (int y = 0; y < info.Height; y++)
       {
@@ -146,6 +150,7 @@ namespace GreenhousePlusPlus.Core.Vision
         EdgeImage = destImages[ImageIdx.EdgeFilter],
         PassImage = destImages[ImageIdx.Passfilter],
         BlurImage = destImages[ImageIdx.Blur],
+        HInterpolateImage =  destImages[ImageIdx.HInterpolte],
         PlantTipImage = destImages[ImageIdx.LongestEdgeOverlay],
         WholePipeline = pipelineImage
       };
@@ -191,7 +196,7 @@ namespace GreenhousePlusPlus.Core.Vision
         var outputRedSpan = images[ImageIdx.Red].GetPixelRowSpan(y);
         var outputGreenSpan = images[ImageIdx.Green].GetPixelRowSpan(y);
         var outputLeafSpan = images[ImageIdx.Leaf].GetPixelRowSpan(y);
-        var outputEathSpan = images[ImageIdx.Earth].GetPixelRowSpan(y);
+        var outputEarthSpan = images[ImageIdx.Earth].GetPixelRowSpan(y);
 
         for (int x = rect.x; x < rect.endx; x++)
         {
@@ -259,11 +264,11 @@ namespace GreenhousePlusPlus.Core.Vision
           if (!greenDominant)
           {
             outputGreenSpan[x] = Rgba32.Transparent;
-            outputEathSpan[x] = new Rgba32(r, g, b);
+            outputEarthSpan[x] = new Rgba32(r, g, b);
           }
           else // Green is dominant
           {
-            outputEathSpan[x] = Rgba32.Transparent;
+            outputEarthSpan[x] = Rgba32.Transparent;
             outputGreenSpan[x] = new Rgba32(0, 255, 0);
             outputLeafSpan[x] = new Rgba32(r, g, b);
           }
@@ -273,8 +278,7 @@ namespace GreenhousePlusPlus.Core.Vision
       return h;
     }
 
-    private static void VerticalBlur(in Image<Rgba32> srcImage, Image<Rgba32> destImage, int blurRounds,
-      FilterRect rect)
+    private static void VerticalBlur(in Image<Rgba32> srcImage, Image<Rgba32> destImage, int blurRounds, FilterRect rect)
     {
       var blurredImage = srcImage.Clone();
       for (int z = 0; z < blurRounds; z++)
@@ -296,8 +300,7 @@ namespace GreenhousePlusPlus.Core.Vision
       }
     }
 
-    private static void Highpass(in Image<Rgba32> srcImage, Image<Rgba32> destImage, int whiteThreshold,
-      FilterRect rect)
+    private static void Highpass(in Image<Rgba32> srcImage, Image<Rgba32> destImage, int whiteThreshold, FilterRect rect)
     {
       for (int y = rect.y; y < rect.endy; y++)
       {
@@ -324,11 +327,10 @@ namespace GreenhousePlusPlus.Core.Vision
     /// <param name="srcFilter"></param>
     /// <param name="destImage"></param>
     /// <param name="avgWindow"></param>
-    private static void LongestVerticalLineCount(in Image<Rgba32> srcImage, in Image<Rgba32> srcFilter,
-      Image<Rgba32> destImage, int avgWindow)
+    private static void LongestVerticalLineCount(in Image<Rgba32> srcImage, in Image<Rgba32> hinterpolateImage,  in Image<Rgba32> srcFilter, Image<Rgba32> destImage, int avgWindow)
     {
-      // Lowpass filter for the average
-      double minValue = ((avgWindow * 2.0 + 1.0) * 255.0) * 0.25;
+      // Min value for neighbourhood average value
+      double minAvgThreshold = 255.0 * 0.25;
       // Copy image
       // destImage = srcImage.Clone(); <--- Why doesnt this work?
       for (int y = 0; y < srcImage.Height; y++)
@@ -348,20 +350,23 @@ namespace GreenhousePlusPlus.Core.Vision
 
       for (int y = skipEdge; y < h - skipEdge; y++)
       {
+        var hInterpolateRow = hinterpolateImage.GetPixelRowSpan(y);
+        var srcFilterRow = srcFilter.GetPixelRowSpan(y);
         for (int x = avgWindow + skipEdge; x < w - avgWindow - skipEdge; x++)
         {
-          double sum = 0d;
-
+          double sum = 0.0;
           // Horizontal average / interpolation,accepts slight slopes
-          for (int k = -avgWindow; k <= avgWindow; k++)
+          for (int k = x - avgWindow; k <= x + avgWindow; k++)
           {
-            sum += srcFilter[x + k, y].R;
+            // Remember, black is 0, to sum black pixel invert them
+            sum += 255.0 - srcFilterRow[k].R;
           }
 
           double avg = sum / (2 * avgWindow + 1);
 
-          // Low pass filter: If not really white then count it
-          vCount[x, y] = avg < minValue;
+          // High pass filter: If the neighbourhood is slightly black then count it
+          vCount[x, y] = avg > minAvgThreshold;
+          hInterpolateRow[x] = vCount[x, y] ? Color.Black : Color.White;
         }
       }
 

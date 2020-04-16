@@ -10,51 +10,25 @@ using SixLabors.ImageSharp.Processing;
 
 namespace GreenhousePlusPlus.Core.Models
 {
+  /// <summary>
+  /// Handles the file management of the images:
+  /// paths, filenames, folder creation and file deletion.
+  /// </summary>
   public class ImageManager
   {
     public const string ImageDir = "Images";
 
     private readonly string _imageRoot;
-
-    public string BasePath
-    {
-      get => Path.Combine(_imageRoot, ImageDir);
-    }
-
-    public string ImagePath
-    {
-      get => Path.Combine(_imageRoot, ImageDir, "Original");
-    }
-
-    public string ThumbsPath
-    {
-      get => Path.Combine(_imageRoot, ImageDir, "Thumbs");
-    }
-
-    public string FilteredPath
-    {
-      get => Path.Combine(_imageRoot, ImageDir, "Filtered");
-    }
-
-    public string SegmentedPath
-    {
-      get => Path.Combine(_imageRoot, ImageDir, "Segmented");
-    }
-
-    public string HistPath
-    {
-      get => Path.Combine(_imageRoot, ImageDir, "Hist");
-    }
-
-    public string KernelPath
-    {
-      get => Path.Combine(_imageRoot, ImageDir, "Kernels");
-    }
-
-    public string PipelinePath
-    {
-      get => Path.Combine(_imageRoot, ImageDir, "Pipeline");
-    }
+    
+    private string BuildPath(string subDir) => Path.Combine(_imageRoot, ImageDir, subDir);
+    public string BasePath => Path.Combine(_imageRoot, ImageDir);
+    public string ImagePath => BuildPath("Original");
+    public string ThumbsPath => Path.Combine(_imageRoot, ImageDir, "Thumbs");
+    public string FilteredPath => Path.Combine(_imageRoot, ImageDir, "Filtered");
+    public string SegmentedPath => Path.Combine(_imageRoot, ImageDir, "Segmented");
+    public string HistPath => Path.Combine(_imageRoot, ImageDir, "Hist");
+    public string KernelPath => Path.Combine(_imageRoot, ImageDir, "Kernels");
+    public string PipelinePath => Path.Combine(_imageRoot, ImageDir, "Pipeline");
 
     public string Filename;
     public ImageFile Original;
@@ -71,6 +45,7 @@ namespace GreenhousePlusPlus.Core.Models
     public ImageFile Edge;
     public ImageFile PlantTip;
     public ImageFile Blur;
+    public ImageFile HInterpolate;
     public ImageFile Pass;
 
     public ImageFile WholePipeline;
@@ -157,6 +132,7 @@ namespace GreenhousePlusPlus.Core.Models
       PlantTip = new ImageFile(_imageRoot, Path.Combine(KernelPath, "edge_overlay" + pngFilename));
       Blur = new ImageFile(_imageRoot, Path.Combine(KernelPath, "blur_" + pngFilename));
       Pass = new ImageFile(_imageRoot, Path.Combine(KernelPath, "pass_" + pngFilename));
+      HInterpolate = new ImageFile(_imageRoot, Path.Combine(KernelPath, "hinterpolate_" + pngFilename));
 
       WholePipeline = new ImageFile(_imageRoot, Path.Combine(PipelinePath, pngFilename));
 
@@ -196,6 +172,7 @@ namespace GreenhousePlusPlus.Core.Models
       PlantTip.Delete();
       Blur.Delete();
       Pass.Delete();
+      HInterpolate.Delete();
       WholePipeline.Delete();
     }
   }
